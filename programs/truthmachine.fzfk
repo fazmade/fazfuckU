@@ -1,0 +1,11 @@
+input = console_getline()
+if (input = "1")
+{
+	while(true)
+	{
+		print("1")
+		console_checkescape()
+	}
+}
+print("0")
+end

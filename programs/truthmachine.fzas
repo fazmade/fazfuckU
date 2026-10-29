@@ -1,0 +1,8 @@
+cons_getline¦input
+comp_str¦B¦input¦=¦"1
+conddontgoto¦6
+print¦"1
+cons_checkescape
+goto¦3
+print¦0
+end
