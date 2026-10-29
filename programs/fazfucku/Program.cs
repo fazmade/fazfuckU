@@ -32,7 +32,9 @@ namespace fazfucku
                             Console.WriteLine(filelocation + " doesn't exist!");
                         else
                         {
-
+                            fazassrunner myassisblicky = new fazassrunner();
+                            myassisblicky.lines = File.ReadAllLines(filelocation);
+                            myassisblicky.run();
                         }
                         break;
                 }
