@@ -1,8 +1,8 @@
 cons_getline¦input
-comp_str¦B¦input¦=¦"1
-conddontgoto¦6
-print¦"1
-cons_checkescape
+comp¦B¦input¦=¦"1
+cdg¦6
+blah¦1
+cons_checkesc
 goto¦3
-print¦0
+blah¦0
 end
