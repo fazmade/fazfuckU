@@ -24,9 +24,6 @@ namespace fazfucku
         {
             switch(line[0])
             {
-                case "blah":
-                    Console.WriteLine(line[1]);
-                    break;
                 case "print":
                     Console.WriteLine(getvar(line[1]));
                     break;
@@ -159,6 +156,29 @@ namespace fazfucku
                         setvar(line[1], result);
                     }
                     break;
+                case "logc": //logic
+                    {
+                        bool result = false;
+                        bool bitch = (bool)getvar(line[3]);
+                        bool boobies = (bool)getvar(line[4]);
+                        switch (line[2])
+                        {
+                            case "&":
+                                result = bitch && boobies;
+                                break;
+                            case "|":
+                                result = bitch || boobies;
+                                break;
+                            case "^":
+                                result = bitch ^ boobies;
+                                break;
+                        }
+                        setvar(line[1], result);
+                    }
+                    break;
+                case "not":
+                    setvar(line[1], !(bool)getvar(line[2]));
+                    break;
                 case "set":
                     setvar(line[1],getvar(line[2]));
                     break;
@@ -184,6 +204,9 @@ namespace fazfucku
                 case "cons_checkesc":
                     if (Console.KeyAvailable && Console.ReadKey().Key == ConsoleKey.Escape)
                         return -1;
+                    break;
+                case "blah":
+                    Console.WriteLine(line[1]);
                     break;
             }
             return counter + 1;
