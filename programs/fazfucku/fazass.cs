@@ -38,6 +38,11 @@ namespace fazfucku
                     if (!blankvar)
                         return int.Parse(line[1]);
                     break;
+                case "csg"://condsplitgoto
+                    if (blankvar)
+                        return int.Parse(line[2]);
+                    else
+                        return int.Parse(line[1]);
                 case "comp":
                     {
                         bool result = false;
@@ -65,44 +70,112 @@ namespace fazfucku
                         setvar(line[1], result);
                     }
                     break;
-                case "m":
+                case "m1": //math 1
                     {
                         float result = 0f;
+                        float num = (float)getvar(line[3]);
                         switch (line[2])
                         {
                             case "a"://abs
-                                result = (float)getvar(line[3]);
-                                if (result < 0f)
-                                    result = -result;
+                                if (num < 0f)
+                                    result = -num;
+                                else
+                                    result = num;
                                 break;
                             case "s"://sign
-                                result = (float)getvar(line[3]);
-                                if (result == 0f)
+                                if (num == 0f)
                                     result = 0f;
-                                else if (result > 0f)
+                                else if (num > 0f)
                                     result = 1f;
-                                else if (result < 0f)
+                                else if (num < 0f)
                                     result = -1f;
                                 break;
-                            case "+":
-                                result = (float)getvar(line[3]) + (float)getvar(line[4]);
-                                break;
-                            case "-":
-                                result = (float)getvar(line[3]) - (float)getvar(line[4]);
-                                break;
-                            case "*":
-                                result = (float)getvar(line[3]) * (float)getvar(line[4]);
-                                break;
-                            case "/":
-                                result = (float)getvar(line[3]) / (float)getvar(line[4]);
-                                break;
-                            case "%":
-                                result = (float)getvar(line[3]) % (float)getvar(line[4]);
+                            case "sq": //sqrt
+                                result = (float)Math.Sqrt(num);
                                 break;
                         }
                         setvar(line[1], result);
                     }
                     break;
+                case "m2": //math 2
+                    {
+                        float result = 0f;
+                        float num1 = (float)getvar(line[3]);
+                        float num2 = (float)getvar(line[4]);
+                        switch (line[2])
+                        {
+                            case "+":
+                                result = num1 + num2;
+                                break;
+                            case "-":
+                                result = num1 - num2;
+                                break;
+                            case "*":
+                                result = num1 * num2;
+                                break;
+                            case "/":
+                                result = num1 / num2;
+                                break;
+                            case "%":
+                                result = num1 % num2;
+                                break;
+                            case "^":
+                                result = (float)Math.Pow(num1, num2);
+                                break;
+                            case "mx": //max
+                                if (num1 > num2)
+                                    result = num1;
+                                else
+                                    result = num2;
+                                break;
+                            case "mn": //min
+                                if (num1 < num2)
+                                    result = num1;
+                                else
+                                    result = num2;
+                                break;
+                            case "rn": //round
+                                result = (float)Math.Round(num1 / num2) * num2;
+                                break;
+                            case "fl": //floor
+                                result = (float)Math.Floor(num1 / num2) * num2;
+                                break;
+                            case "cl": //cieling
+                                result = (float)Math.Ceiling(num1 / num2) * num2;
+                                break;
+                            case "si": //sin
+                                result = (float)Math.Sin(num1 * Math.PI / num2);
+                                break;
+                            case "co": //cos
+                                result = (float)Math.Cos(num1 * Math.PI / num2);
+                                break;
+                            case "ta": //tan
+                                result = (float)Math.Tan(num1 * Math.PI / num2);
+                                break;
+                            case "lg": //log
+                                result = (float)Math.Log(num1, num2);
+                                break;
+                        }
+                        setvar(line[1], result);
+                    }
+                    break;
+                case "set":
+                    setvar(line[1],getvar(line[2]));
+                    break;
+                case "undef":
+                    if (globaldict.ContainsKey(line[1]))
+                        globaldict.Remove(line[1]);
+                    break;
+                case "fstk_a": //funcstack_add
+                    funcstack.Insert(0, getvar(line[1]));
+                    break;
+                case "fstk_d": //funcstack_discard
+                    funcstack.RemoveRange(0, int.Parse(line[1]));
+                    break;
+                case "fstk_pg": //funcstack_popgoto
+                    int jumbojosh = (int)funcstack[0];
+                    funcstack.RemoveAt(0);
+                    return jumbojosh;
 
                 //COMSOEL?!
                 case "cons_getline":
@@ -117,7 +190,7 @@ namespace fazfucku
         }
         private void setvar(string identifier, object value)
         {
-            if (identifier == "true" || identifier == "false" || identifier.StartsWith("\""))
+            if (identifier == "true" || identifier == "false" || identifier.StartsWith("\"") || identifier.StartsWith("N"))
             {
                 doerror(identifier + " is a constant value!");
                 return;
@@ -147,7 +220,7 @@ namespace fazfucku
                 return false;
             if (identifier.StartsWith("\""))
                 return identifier.Substring(1);
-            if (char.IsNumber(identifier[0]))
+            if (identifier.StartsWith("N"))
                 return float.Parse(identifier.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture);
             if (identifier == "B")
                 return blankvar;
