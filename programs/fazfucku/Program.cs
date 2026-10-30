@@ -28,7 +28,7 @@ namespace fazfucku
                     case "runsingle":
                         if (filelocation == string.Empty)
                             Console.WriteLine("no file location set!");
-                        else if (File.Exists(filelocation))
+                        else if (!File.Exists(filelocation))
                             Console.WriteLine(filelocation + " doesn't exist!");
                         else
                         {
@@ -36,6 +36,9 @@ namespace fazfucku
                             myassisblicky.lines = File.ReadAllLines(filelocation);
                             myassisblicky.run();
                         }
+                        break;
+                    default:
+                        Console.WriteLine("WAT");
                         break;
                 }
             }

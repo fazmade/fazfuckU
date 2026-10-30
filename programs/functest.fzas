@@ -1,0 +1,11 @@
+set|x|N2
+set|y|N3
+fstk_a|N6
+fstk_a|y
+fstk_a|x
+goto|8
+print|q
+end
+m2|q|+|x|y
+fstk_d|2
+fstk_pg
