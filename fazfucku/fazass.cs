@@ -13,7 +13,7 @@ namespace fazfucku
         //static bool isinhook = false;
         private List<object> funcstack = new List<object>();
         private bool blankvar;
-        private bool debug_runline;
+        private bool debug_runline = true;
         public void run()
         {
             while(counter != -1)
