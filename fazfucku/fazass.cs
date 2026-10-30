@@ -13,10 +13,13 @@ namespace fazfucku
         //static bool isinhook = false;
         private List<object> funcstack = new List<object>();
         private bool blankvar;
+        private bool debug_runline;
         public void run()
         {
             while(counter != -1)
             {
+                if (debug_runline)
+                    debugline(lines[counter]);
                 counter = runline(lines[counter].Split('¦'));
             }
         }
@@ -193,9 +196,47 @@ namespace fazfucku
                     funcstack.RemoveRange(0, int.Parse(line[1]));
                     break;
                 case "fstk_pg": //funcstack_popgoto
-                    int jumbojosh = (int)funcstack[0];
-                    funcstack.RemoveAt(0);
-                    return jumbojosh;
+                    {
+                        int jumbojosh = (int)funcstack[0];
+                        funcstack.RemoveAt(0);
+                        return jumbojosh;
+                    }
+                case "conv": //convert
+                    {
+                        object jumbojosh = getvar(line[2]);
+                        Type typojosh = jumbojosh.GetType();
+                        switch (line[3])
+                        {
+                            default:
+                                doerror(line[3] + " is an invalid type!");
+                                break;
+                            case "Tbool":
+                                if (typojosh == typeof(float))
+                                    setvar(line[1], (float)jumbojosh >= 0f);
+                                else if (typojosh == typeof(string))
+                                    setvar(line[1], (string)jumbojosh != string.Empty);
+                                else
+                                    setvar(line[1], (bool)jumbojosh);
+                                break;
+                            case "Tnum":
+                                if (typojosh == typeof(bool))
+                                    setvar(line[1], (bool)jumbojosh ? 1f : 0f);
+                                else if (typojosh == typeof(string))
+                                    setvar(line[1], getvar("N" + jumbojosh));
+                                else
+                                    setvar(line[1], (float)jumbojosh);
+                                break;
+                            case "Tstr":
+                                if (typojosh == typeof(bool))
+                                    setvar(line[1], (bool)jumbojosh ? "true" : "false");
+                                else if (typojosh == typeof(float))
+                                    setvar(line[1], jumbojosh.ToString().Replace(',', '.'));
+                                else
+                                    setvar(line[1], jumbojosh.ToString());
+                                break;
+                        }
+                    }
+                    break;
 
                 //COMSOEL?!
                 case "cons_getline":
@@ -260,6 +301,12 @@ namespace fazfucku
                 linenumber = counter;
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(linenumber + ": " + err);
+            Console.ResetColor();
+        }
+        static void debugline(string text)
+        {
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine(text);
             Console.ResetColor();
         }
     }
