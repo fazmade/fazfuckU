@@ -272,7 +272,7 @@ namespace fazfucku
                 blankvar = (bool)value;
                 return;
             }
-            if (identifier.StartsWith("‡"))
+            if (identifier.StartsWith("S"))
             {
                 funcstack[int.Parse(identifier.Substring(1))] = value;
                 return;
