@@ -247,7 +247,7 @@ namespace fazfucku
                         return -1;
                     break;
                 case "blah":
-                    Console.WriteLine(line[1]);
+                    Console.WriteLine("blah" + line[1]);
                     break;
             }
             return counter + 1;

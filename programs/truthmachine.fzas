@@ -1,8 +1,8 @@
 cons_getline¦input
 comp¦B¦input¦=¦"1
 cdg¦6
-blah¦1
+print¦"1
 cons_checkesc
 goto¦3
-blah¦0
+print¦"1
 end
