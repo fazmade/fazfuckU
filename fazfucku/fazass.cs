@@ -251,6 +251,9 @@ namespace fazfucku
                     case "blah":
                         Console.WriteLine("blah" + line[1]);
                         break;
+                    case "debug_funcstack":
+                        Console.WriteLine(string.Join("|", funcstack));
+                        break;
                 }
                 return counter + 1;
             }
@@ -294,6 +297,8 @@ namespace fazfucku
                 return identifier.Substring(1);
             if (identifier.StartsWith("N"))
                 return float.Parse(identifier.Substring(1).Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture);
+            if (identifier.StartsWith("I"))
+                return int.Parse(identifier.Substring(1));
             if (identifier == "B")
                 return blankvar;
             if (identifier.StartsWith("‡"))
