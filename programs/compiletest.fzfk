@@ -1,0 +1,12 @@
+x=2
+y=3
+z=x+y
+if (z = 5)
+{
+	print("yeah")
+}
+else
+{
+	print("nope")
+}
+end
