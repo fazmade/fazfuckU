@@ -10,6 +10,7 @@ namespace fazfucku
         static void Main(string[] args)
         {
             bool gobromytoelo = true;
+            bool runwithdebug = false;
             while (gobromytoelo)
             {
                 Console.Write("inpoot:");
@@ -34,8 +35,16 @@ namespace fazfucku
                         {
                             fazassrunner myassisblicky = new fazassrunner();
                             myassisblicky.lines = File.ReadAllLines(filelocation);
+                            myassisblicky.debug_runline = runwithdebug;
                             myassisblicky.run();
                         }
+                        break;
+                    case "togglerundebug":
+                        runwithdebug = !runwithdebug;
+                        if (runwithdebug)
+                            Console.WriteLine("running with debug");
+                        else
+                            Console.WriteLine("not running with debug");
                         break;
                     default:
                         Console.WriteLine("WAT");
