@@ -62,8 +62,10 @@ namespace fazfucku
                                 if (!File.Exists(compiledplace))
                                     File.Create(compiledplace).Dispose();
                                 File.WriteAllText(compiledplace, thecompiled);
-                                Console.WriteLine("complied!");
+                                Console.WriteLine("compild!");
                             }
+                            else
+                                Console.WriteLine("compiled file was empty!!");
                         }
                         break;
                     default:

@@ -1,12 +1,28 @@
 x=2
 y=3
 z=(x+y)
+fucked=z
 if ⟨z = 5⟩
 {
 	print("yeah")
+	fuckering(2)
+	shitass=⟨fucked≠10⟩
+	if (shitass)
+	{
+		print("nope")
+	}
+	else
+	{
+		print("yeah")
+	}
 }
 else
 {
 	print("nope") Har har har! funny stuff my dude!
 }
 end
+func fuckering(a)
+{
+	(fucked×a)
+	return
+}

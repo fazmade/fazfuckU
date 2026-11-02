@@ -14,14 +14,17 @@ namespace fazfucku
         {
             try
             {
-                Console.WriteLine("compiler: initial lexer start");
                 lines = new List<lineinfo>();
+                Console.WriteLine("compiler: initial lexer start");
                 initiallexer();
+                Console.WriteLine("compiler: line convert thingy get better name start");
+                lineconvertthingy();
+                Console.WriteLine("compiler: output file");
                 return outputfile();
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine("compiler: " + e.ToString());
                 return string.Empty;
             }
         }
@@ -146,14 +149,40 @@ namespace fazfucku
                 prevchar = curchar;
             }
         }
+        //line convert thingy
+        enum linetype { math, mathdirect, boel, logicdirect, function, functionset, functionout, standalone, boolfunction, set, definationfunction, definationhook, definationsection, definationfunctionstandalone, definationfunctionout, definationfunctionoutonly, definationhookstandalone, broken, theresNOTHING }
+        void lineconvertthingy()
+        {
+            for (int i = 0; i < lines.Count; i++)
+            {
+                linetype ligmaballs = getlinetype(lines[i].pieces);
+                if (ligmaballs == linetype.boolfunction)
+                {
+                    lineinfo newline = new lineinfo();
+                    newline.pieces.Add("{");
+                    newline.originallineid = lines[i].originallineid;
+                    lines.Insert(i + 1, newline);
+                    newline.pieces[0] = "}";
+                    newline.originallineid = lines[i+1].originallineid;
+                }
+                Console.WriteLine(ligmaballs.ToString());
+            }
+        }
+        linetype getlinetype(List<string> daline)
+        {
+            if (daline.Count == 0)
+                return linetype.theresNOTHING;
+            return linetype.broken;
+        }
         //output
         string outputfile()
         {
             StringBuilder thebuilder = new StringBuilder();
             foreach (lineinfo lijn in lines)
             {
-                thebuilder.Append(string.Join("¦", lijn.pieces));
+                thebuilder.AppendLine(string.Join("¦", lijn.pieces));
             }
+            thebuilder.Remove(thebuilder.Length - 1, 1);
             return thebuilder.ToString();
         }
     }
