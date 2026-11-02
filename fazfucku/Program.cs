@@ -46,6 +46,26 @@ namespace fazfucku
                         else
                             Console.WriteLine("not running with debug");
                         break;
+                    case "compile":
+                        if (filelocation == string.Empty)
+                            Console.WriteLine("no file location set!");
+                        else if (!File.Exists(filelocation))
+                            Console.WriteLine(filelocation + " doesn't exist!");
+                        else
+                        {
+                            fazfuckucompiler compilah = new fazfuckucompiler();
+                            compilah.inputfile = File.ReadAllText(filelocation);
+                            string thecompiled = compilah.compile();
+                            if (thecompiled != string.Empty)
+                            {
+                                string compiledplace = Path.ChangeExtension(filelocation, "fzas");
+                                if (!File.Exists(compiledplace))
+                                    File.Create(compiledplace).Dispose();
+                                File.WriteAllText(compiledplace, thecompiled);
+                                Console.WriteLine("complied!");
+                            }
+                        }
+                        break;
                     default:
                         Console.WriteLine("WAT");
                         break;

@@ -1,0 +1,1 @@
+x¦=¦2y¦=¦3z¦=¦(¦x+y¦)if¦⟨¦z¦=¦5¦⟩{print¦(¦"yeah¦)}else{print¦(¦"nope¦)}
