@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Media;
 
 namespace fazfucku
 {
@@ -21,10 +22,7 @@ namespace fazfucku
                         gobromytoelo = false;
                         break;
                     case "location":
-                        if (input.Length > 1)
-                            filelocation = input[1];
-                        else
-                            Console.WriteLine(filelocation);
+                        Console.WriteLine(filelocation);
                         break;
                     case "runsingle":
                         if (filelocation == string.Empty)
@@ -63,15 +61,27 @@ namespace fazfucku
                                     File.Create(compiledplace).Dispose();
                                 File.WriteAllText(compiledplace, thecompiled);
                                 Console.WriteLine("compild!");
+                                funnywindowssound("tada.wav"); //it's the best part of the vs build process bro!
+                                break;
                             }
                             else
                                 Console.WriteLine("compiled file was empty!!");
                         }
+                        funnywindowssound("Windows Error.wav");
                         break;
                     default:
-                        Console.WriteLine("WAT");
+                        if (File.Exists(input[0]))
+                            filelocation = input[0];
+                        else
+                            Console.WriteLine("WAT");
                         break;
                 }
+            }
+            void funnywindowssound(string sound)
+            {
+                SoundPlayer simpleSound = new SoundPlayer(@"c:\Windows\Media\" + sound);
+                simpleSound.Play();
+                simpleSound.Dispose();
             }
         }
     }
