@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace fazfucku
 {
+    enum linetype { math, mathdirect, boel, booldirect, function, functionset, functionout, standalone, controlfunction, set, definationfunction, definationhook, definationsection, definationfunctionstandalone, definationfunctionout, definationfunctionoutonly, definationhookstandalone, broken, theresNOTHING, functionboolnargumentset, functionoutset }
     internal class fazfuckucompiler
     {
         public string inputfile;
@@ -150,20 +151,26 @@ namespace fazfucku
             }
         }
         //line convert thingy
-        enum linetype { math, mathdirect, boel, logicdirect, function, functionset, functionout, standalone, boolfunction, set, definationfunction, definationhook, definationsection, definationfunctionstandalone, definationfunctionout, definationfunctionoutonly, definationhookstandalone, broken, theresNOTHING }
         void lineconvertthingy()
         {
             for (int i = 0; i < lines.Count; i++)
             {
                 linetype ligmaballs = getlinetype(lines[i].pieces);
-                if (ligmaballs == linetype.boolfunction)
+
+                if (ligmaballs == linetype.controlfunction)
                 {
-                    lineinfo newline = new lineinfo();
-                    newline.pieces.Add("{");
-                    newline.originallineid = lines[i].originallineid;
-                    lines.Insert(i + 1, newline);
-                    newline.pieces[0] = "}";
-                    newline.originallineid = lines[i+1].originallineid;
+                    if (lines[i].pieces[0] != "{")
+                    {
+                        lineinfo newline = new lineinfo();
+                        newline.pieces.Add("{");
+                        newline.originallineid = lines[i].originallineid;
+                        newline.type = linetype.standalone;
+                        lines.Insert(i + 1, newline);
+                        newline.pieces[0] = "}";
+                        newline.originallineid = lines[i + 1].originallineid;
+                        newline.type = linetype.standalone;
+                        lines.Insert(i + 3, newline);
+                    }
                 }
                 Console.WriteLine(ligmaballs.ToString());
             }
@@ -172,6 +179,51 @@ namespace fazfucku
         {
             if (daline.Count == 0)
                 return linetype.theresNOTHING;
+            if (daline[0] == "(")
+                return linetype.mathdirect;
+            if (daline[0] == "⟨")
+                return linetype.booldirect;
+            if (daline[0] == "func ")
+            {
+                if (daline.Count == 2)
+                    return linetype.definationfunctionstandalone;
+                if (daline[2] == "(")
+                    return linetype.definationfunction;
+                if (daline[2] == "[") //implement later
+                    return linetype.broken;
+            }
+            if (daline[0] == "hook ")
+            {
+                if (daline.Count == 2)
+                    return linetype.definationhookstandalone;
+                return linetype.definationhook;
+            }
+            if (daline[0] == "section ")
+                return linetype.definationsection;
+            if (daline[1] == "=")
+            {
+                if (daline.Count < 3)
+                    return linetype.broken;
+                if (daline.Count == 3)
+                    return linetype.set;
+                if (daline[2] == "(")
+                    return linetype.math;
+                if (daline[2] == "⟨")
+                    return linetype.boel;
+                if (daline[3] == "(")
+                    return linetype.functionset;
+                if (daline[3] == "⟨")
+                    return linetype.functionboolnargumentset;
+                if (daline[3] == "[")
+                    return linetype.functionoutset;
+                return linetype.broken;
+            }
+            if (daline[1] == "(")
+                return linetype.function;
+            if (daline[1] == "⟨")
+                return linetype.controlfunction;
+            if (daline[1] == "[")
+                return linetype.functionout;
             return linetype.broken;
         }
         //output
@@ -191,6 +243,7 @@ namespace fazfucku
         public List<string> pieces = new List<string>();
         public List<marker> markers = new List<marker>();
         public int originallineid = -1;
+        public linetype type = linetype.broken;
     }
     class marker
     {

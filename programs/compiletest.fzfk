@@ -7,14 +7,10 @@ if ⟨z = 5⟩
 	print("yeah")
 	fuckering(2)
 	shitass=⟨fucked≠10⟩
-	if (shitass)
-	{
+	if ⟨shitass⟩
 		print("nope")
-	}
 	else
-	{
 		print("yeah")
-	}
 }
 else
 {
