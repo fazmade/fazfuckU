@@ -157,18 +157,17 @@ namespace fazfucku
             {
                 linetype ligmaballs = getlinetype(lines[i].pieces);
 
-                if (ligmaballs == linetype.controlfunction)
+                if (ligmaballs == linetype.controlfunction || (ligmaballs == linetype.standalone && (lines[i].pieces[0] == "else" || lines[i].pieces[0] == "otherwise")))
                 {
-                    if (lines[i].pieces[0] != "{")
+                    if (lines[i+1].pieces[0] != "{")
                     {
                         lineinfo newline = new lineinfo();
                         newline.pieces.Add("{");
                         newline.originallineid = lines[i].originallineid;
-                        newline.type = linetype.standalone;
                         lines.Insert(i + 1, newline);
-                        newline.pieces[0] = "}";
+                        newline = new lineinfo();
+                        newline.pieces.Add("}");
                         newline.originallineid = lines[i + 1].originallineid;
-                        newline.type = linetype.standalone;
                         lines.Insert(i + 3, newline);
                     }
                 }
@@ -179,6 +178,8 @@ namespace fazfucku
         {
             if (daline.Count == 0)
                 return linetype.theresNOTHING;
+            if (daline.Count == 1)
+                return linetype.standalone;
             if (daline[0] == "(")
                 return linetype.mathdirect;
             if (daline[0] == "⟨")

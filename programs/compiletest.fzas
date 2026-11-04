@@ -1,1 +1,26 @@
-x¦=¦2y¦=¦3z¦=¦(¦x+y¦)if¦⟨¦z¦=¦5¦⟩{print¦(¦"yeah¦)}else{print¦(¦"nope¦)}
+x¦=¦2
+y¦=¦3
+z¦=¦(¦x+y¦)
+fucked¦=¦z
+if¦⟨¦z¦=¦5¦⟩
+{
+print¦(¦"yeah¦)
+fuckering¦(¦2¦)
+shitass¦=¦⟨¦fucked≠10¦⟩
+if¦⟨¦shitass¦⟩
+{
+print¦(¦"nope¦)
+}
+else
+print¦(¦"yeah¦)
+}
+else
+{
+print¦(¦"nope¦)
+}
+end
+func ¦fuckering¦(¦a¦)
+{
+(¦fucked×a¦)
+return
+}
