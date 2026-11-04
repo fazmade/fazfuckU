@@ -1,3 +1,3 @@
-supports_arbitrary_parameter_counts supports_list_variables
+supports_arbitrary_parameter_counts supports_lists supports_dictionaries
 hooks
 presskey nocatch 1
