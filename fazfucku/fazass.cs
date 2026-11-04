@@ -242,7 +242,10 @@ namespace fazfucku
                             globaldict.Remove(line[1]);
                         break;
                     case "fstk_a": //funcstack_add
-                        funcstack.Insert(0, getvar(line[1]));
+                        for (int i = 1; i < line.Length; i++)
+                        {
+                            funcstack.Insert(0, getvar(line[i]));
+                        }
                         break;
                     case "fstk_d": //funcstack_discard
                         funcstack.RemoveRange(0, int.Parse(line[1]));
@@ -253,6 +256,13 @@ namespace fazfucku
                             funcstack.RemoveAt(0);
                             return jumbojosh;
                         }
+                    case "fstk_p": //funcstack_pop
+                        for (int i = 1; i < line.Length; i++)
+                        {
+                            setvar(line[i], funcstack[0]);
+                            funcstack.RemoveAt(0);
+                        }
+                        break;
                     case "tstr": //to_string
                         {
                             object jumbojosh = getvar(line[2]);
