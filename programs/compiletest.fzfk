@@ -5,20 +5,19 @@ fucked=z
 if ⟨z = 5⟩
 {
 	print("yeah")
-	fuckering(2)
+	(fucked×2)
 	shitass=⟨fucked≠10⟩
 	if ⟨shitass⟩
 		print("nope")
 	else
 		print("yeah")
 }
+elif ⟨z = 5⟩
+{
+	print("3!")
+}
 else
 {
 	print("nope") Har har har! funny stuff my dude!
 }
 end
-func fuckering(a)
-{
-	(fucked×a)
-	return
-}

@@ -20,6 +20,8 @@ namespace fazfucku
                 initiallexer();
                 Console.WriteLine("compiler: line convert thingy get better name start");
                 lineconvertthingy();
+                Console.WriteLine("compiler: line convert TWO start");
+                lineconverttwo();
                 Console.WriteLine("compiler: output file");
                 return outputfile();
             }
@@ -33,7 +35,6 @@ namespace fazfucku
         lineinfo workingline;
         string workingtoken;
         int currentfileline;
-        enum lextype { defauld, stringe }
         lextype curlextype;
         void poptoken()
         {
@@ -53,6 +54,7 @@ namespace fazfucku
                 workingline = new lineinfo();
             }
         }
+        enum lextype { defauld, stringe, logicalic }
         void initiallexer()
         {
             workingline = new lineinfo();
@@ -109,7 +111,14 @@ namespace fazfucku
                             }
                             popline();
                         }
-                        else if (curchar == '(' || curchar == ')' || curchar == ',' || curchar == '=' || curchar == '[' || curchar == ']' || curchar == '⟨' || curchar == '⟩')
+                        else if (curchar == '⟨')
+                        {
+                            poptoken();
+                            workingtoken = "⟨";
+                            poptoken();
+                            curlextype = lextype.logicalic;
+                        }
+                        else if (curchar == '(' || curchar == ')' || curchar == ',' || curchar == '=' || curchar == '[' || curchar == ']')
                         {
                             poptoken();
                             workingtoken = curchar.ToString();
@@ -134,6 +143,17 @@ namespace fazfucku
                         else if (curchar == '\\') { } //NOTHING HAPPENS
                         else if (curchar == '\"')
                         {
+                            poptoken();
+                            curlextype = lextype.defauld;
+                        }
+                        else
+                            workingtoken += curchar;
+                        break;
+                    case lextype.logicalic:
+                        if (curchar == '⟩')
+                        {
+                            poptoken();
+                            workingtoken = "⟩";
                             poptoken();
                             curlextype = lextype.defauld;
                         }
@@ -171,7 +191,7 @@ namespace fazfucku
                         lines.Insert(i + 3, newline);
                     }
                 }
-                Console.WriteLine(ligmaballs.ToString());
+                //Console.WriteLine(ligmaballs.ToString());
             }
         }
         linetype getlinetype(List<string> daline)
@@ -226,6 +246,38 @@ namespace fazfucku
             if (daline[1] == "[")
                 return linetype.functionout;
             return linetype.broken;
+        }
+        //convert line.. TWO! still needs a better name :sob:
+        void lineconverttwo()
+        {
+            Predicate<string> commaer = piec => piec == ","; //checks if it's a comma i think
+            for (int i = 0; i < lines.Count; i++)
+            {
+                lineinfo line = lines[i];
+                switch (line.type)
+                {
+                    case linetype.function:
+                        line.pieces.RemoveAt(1); //remove first (
+                        line.pieces.RemoveAt(line.pieces.Count-1); //remove last )
+                        line.pieces.RemoveAll(commaer); //remove seperating commas
+                        break;
+                    case linetype.functionset:
+                        string setvar = line.pieces[0]; //save variable
+                        line.pieces.RemoveRange(0, 2); //removes the variable and =
+                        line.pieces.RemoveAt(1); //remove first (
+                        line.pieces.RemoveAt(line.pieces.Count - 1); //remove last )
+                        line.pieces.RemoveAll(commaer); //remove seperating commas
+                        line.pieces.Insert(1, setvar); //add back setvar
+                        break;
+                }
+                lines[i] = line;
+            }
+        }
+        void parsemath(string toparse, out string num1, out string operatoro, out string num2)
+        {
+            num1 = "tmep";
+            operatoro = "tmep";
+            num2 = "tmep";
         }
         //output
         string outputfile()
