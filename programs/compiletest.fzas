@@ -1,26 +1,27 @@
-x¦=¦2
-y¦=¦3
-z¦=¦(¦x+y¦)
-fucked¦=¦z
-if¦⟨¦z¦=¦5¦⟩
+set¦x¦2
+set¦y¦3
+math¦z¦+¦x¦y
+set¦fucked¦z
+if¦⟨¦z = 5¦⟩
 {
-print¦(¦"yeah¦)
-fuckering¦(¦2¦)
-shitass¦=¦⟨¦fucked≠10¦⟩
+print¦"yeah
+math¦fucked¦×¦fucked¦2
+comp¦shitass¦fucked¦≠¦10
 if¦⟨¦shitass¦⟩
 {
-print¦(¦"nope¦)
-}
-else
-print¦(¦"yeah¦)
+print¦"nope
 }
 else
 {
-print¦(¦"nope¦)
+print¦"yeah
 }
-end
-func ¦fuckering¦(¦a¦)
+}
+elif¦⟨¦z = 5¦⟩
 {
-(¦fucked×a¦)
-return
-}
+print¦"3!
+}
+else
+{
+print¦"nope
+}
+end

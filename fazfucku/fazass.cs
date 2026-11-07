@@ -221,12 +221,6 @@ namespace fazfucku
                                             case "lg": //log
                                                 result = (float)Math.Log(num1, num2);
                                                 break;
-                                            case "&":
-                                                result = (int)num1 & (int)num2;
-                                                break;
-                                            case "|":
-                                                result = (int)num1 | (int)num2;
-                                                break;
                                         }
                                         break;
                                 }

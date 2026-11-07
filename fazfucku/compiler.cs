@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace fazfucku
 {
-    enum linetype { math, mathdirect, boel, booldirect, function, functionset, functionout, standalone, controlfunction, set, definationfunction, definationhook, definationsection, definationfunctionstandalone, definationfunctionout, definationfunctionoutonly, definationhookstandalone, broken, theresNOTHING, functionboolnargumentset, functionoutset }
+    enum linetype { math, mathdirect, boel, booldirect, function, functionset, standalone, controlfunction, set, definationhookfunc, definationsection, broken, theresNOTHING, functionboolnargumentset, fazfuck, controlfunctionarged }
     internal class fazfuckucompiler
     {
         public string inputfile;
@@ -18,10 +18,10 @@ namespace fazfucku
                 lines = new List<lineinfo>();
                 Console.WriteLine("compiler: initial lexer start");
                 initiallexer();
-                Console.WriteLine("compiler: line convert thingy get better name start");
-                lineconvertthingy();
-                Console.WriteLine("compiler: line convert TWO start");
-                lineconverttwo();
+                Console.WriteLine("compiler: line detection start");
+                linedetector();
+                Console.WriteLine("compiler: main fazass conversion start");
+                mainfazassconvert();
                 Console.WriteLine("compiler: output file");
                 return outputfile();
             }
@@ -169,14 +169,15 @@ namespace fazfucku
                 }
                 prevchar = curchar;
             }
+            popline();
         }
-        //line convert thingy
-        void lineconvertthingy()
+        //line detection
+        void linedetector()
         {
             for (int i = 0; i < lines.Count; i++)
             {
                 linetype ligmaballs = getlinetype(lines[i].pieces);
-
+                lines[i].type = ligmaballs;
                 if (ligmaballs == linetype.controlfunction || (ligmaballs == linetype.standalone && (lines[i].pieces[0] == "else" || lines[i].pieces[0] == "otherwise")))
                 {
                     if (lines[i+1].pieces[0] != "{")
@@ -187,7 +188,7 @@ namespace fazfucku
                         lines.Insert(i + 1, newline);
                         newline = new lineinfo();
                         newline.pieces.Add("}");
-                        newline.originallineid = lines[i + 1].originallineid;
+                        newline.originallineid = lines[i].originallineid;
                         lines.Insert(i + 3, newline);
                     }
                 }
@@ -204,21 +205,8 @@ namespace fazfucku
                 return linetype.mathdirect;
             if (daline[0] == "⟨")
                 return linetype.booldirect;
-            if (daline[0] == "func ")
-            {
-                if (daline.Count == 2)
-                    return linetype.definationfunctionstandalone;
-                if (daline[2] == "(")
-                    return linetype.definationfunction;
-                if (daline[2] == "[") //implement later
-                    return linetype.broken;
-            }
-            if (daline[0] == "hook ")
-            {
-                if (daline.Count == 2)
-                    return linetype.definationhookstandalone;
-                return linetype.definationhook;
-            }
+            if (daline[0] == "func " || daline[0] == "hook ")
+                return linetype.definationhookfunc;
             if (daline[0] == "section ")
                 return linetype.definationsection;
             if (daline[1] == "=")
@@ -231,53 +219,195 @@ namespace fazfucku
                     return linetype.math;
                 if (daline[2] == "⟨")
                     return linetype.boel;
-                if (daline[3] == "(")
+                if (daline[3] == "(" || daline[3] == "[")
                     return linetype.functionset;
                 if (daline[3] == "⟨")
                     return linetype.functionboolnargumentset;
-                if (daline[3] == "[")
-                    return linetype.functionoutset;
                 return linetype.broken;
             }
-            if (daline[1] == "(")
+            if (daline[1] == "(" || daline[1] == "[")
                 return linetype.function;
             if (daline[1] == "⟨")
+            {
+                if (daline.Count > 4)
+                    return linetype.controlfunctionarged;
                 return linetype.controlfunction;
-            if (daline[1] == "[")
-                return linetype.functionout;
+            }
             return linetype.broken;
         }
-        //convert line.. TWO! still needs a better name :sob:
-        void lineconverttwo()
+        //main fazass conversion
+        void mainfazassconvert()
         {
             Predicate<string> commaer = piec => piec == ","; //checks if it's a comma i think
             for (int i = 0; i < lines.Count; i++)
             {
-                lineinfo line = lines[i];
-                switch (line.type)
+                switch (lines[i].type)
                 {
                     case linetype.function:
-                        line.pieces.RemoveAt(1); //remove first (
-                        line.pieces.RemoveAt(line.pieces.Count-1); //remove last )
-                        line.pieces.RemoveAll(commaer); //remove seperating commas
+                        lines[i].pieces.Remove("(");
+                        lines[i].pieces.Remove(")");
+                        lines[i].pieces.Remove("[");
+                        lines[i].pieces.Remove("]");
+                        lines[i].pieces.RemoveAll(commaer);
+                        lines[i].type = linetype.fazfuck;
                         break;
                     case linetype.functionset:
-                        string setvar = line.pieces[0]; //save variable
-                        line.pieces.RemoveRange(0, 2); //removes the variable and =
-                        line.pieces.RemoveAt(1); //remove first (
-                        line.pieces.RemoveAt(line.pieces.Count - 1); //remove last )
-                        line.pieces.RemoveAll(commaer); //remove seperating commas
-                        line.pieces.Insert(1, setvar); //add back setvar
+                        {
+                            lines[i].pieces.RemoveAll(commaer);
+                            int variablecount = lines[i].pieces.IndexOf("=");
+                            List<string> setvar = lines[i].pieces.GetRange(0, variablecount);
+                            lines[i].pieces.RemoveRange(0, variablecount + 1);
+                            lines[i].pieces.Remove("(");
+                            lines[i].pieces.Remove(")");
+                            lines[i].pieces.Remove("[");
+                            lines[i].pieces.Remove("]");
+                            lines[i].pieces.InsertRange(1, setvar); //add back setvar
+                            lines[i].type = linetype.fazfuck;
+                        }
+                        break;
+                    case linetype.math:
+                        {
+                            string setvar = lines[i].pieces[0]; //save variable
+                            lines[i].pieces.RemoveRange(0, 2); //removes the variable and =
+                            lines[i].pieces.Remove("(");
+                            lines[i].pieces.Remove(")");
+                            parsemath(string.Join("", lines[i].pieces), out string num1, out string oper, out string num2);
+                            lines[i].pieces = new List<string> { "math", setvar, oper, num1, num2 };
+                            lines[i].type = linetype.fazfuck;
+                        }
+                        break;
+                    case linetype.mathdirect:
+                        {
+                            lines[i].pieces.Remove("(");
+                            lines[i].pieces.Remove(")");
+                            parsemath(string.Join("", lines[i].pieces), out string num1, out string oper, out string num2);
+                            lines[i].pieces = new List<string> { "math", num1, oper, num1, num2 };
+                            lines[i].type = linetype.fazfuck;
+                        }
+                        break;
+                    case linetype.set:
+                        {
+                            lines[i].pieces = new List<string> { "set", lines[i].pieces[0], lines[i].pieces[2] };
+                            lines[i].type = linetype.fazfuck;
+                        }
+                        break;
+                    case linetype.booldirect:
+                        lines[i].pieces = parsecond(lines[i].pieces[1], "");
+                        lines[i].type = linetype.fazfuck;
+                        break;
+                    case linetype.boel:
+                        lines[i].pieces = parsecond(lines[i].pieces[3], lines[i].pieces[0]);
+                        lines[i].type = linetype.fazfuck;
                         break;
                 }
-                lines[i] = line;
             }
         }
-        void parsemath(string toparse, out string num1, out string operatoro, out string num2)
+        void parsemath(string toparse, out string num1, out string oper, out string num2)
         {
-            num1 = "tmep";
-            operatoro = "tmep";
-            num2 = "tmep";
+            List<string> peepees = new List<string>();
+            string curp = "";
+            for (int i = 0; i < toparse.Length; i++)
+            {
+                char curchar = toparse[i];
+                if (curchar == '+' || curchar == '-' || curchar == '×' || curchar == '÷' || curchar == '%' || curchar == '^' || curchar == '@')
+                {
+                    peepees.Add(curp);
+                    peepees.Add(curchar.ToString());
+                    curp = "";
+                }
+                else if (!char.IsWhiteSpace(curchar))
+                    curp += curchar;
+            }
+            peepees.Add(curp);
+            if (peepees[0] == "-")
+            {
+                if (peepees[1] == "+")
+                {
+                    num1 = "-+" + peepees[2];
+                    peepees.RemoveRange(0, 3);
+                }
+                else
+                {
+                    num1 = "-" + peepees[1];
+                    peepees.RemoveRange(0, 2);
+                }
+            }
+            else if (peepees[0] == "+")
+            {
+                num1 = "+" + peepees[1];
+                peepees.RemoveRange(0, 2);
+            }
+            else
+            {
+                num1 = peepees[0];
+                peepees.RemoveAt(0);
+            }
+            oper = peepees[0];
+            if (peepees[1] == "-")
+            {
+                if (peepees[2] == "+")
+                    num2 = "-+" + peepees[3];
+                else
+                    num2 = "-" + peepees[2];
+            }
+            else if (peepees[1] == "+")
+                num2 = "+" + peepees[2];
+            else
+                num2 = peepees[1];
+        }
+        Dictionary<string, string> specialcomparisons = new Dictionary<string, string>
+        {
+            { "contains", "c" },
+            { "!contains", "!c" },
+            { "startswith", "s" },
+            { "!startswith", "!s" },
+            { "endswith", "e" },
+            { "!endswith", "!e" }
+        };
+        List<string> parsecond(string toparse, string outputvar)
+        {
+            if (toparse.Contains(" "))
+            {
+                string[] splitty = toparse.Split(' ');
+                if (splitty.Contains("contains") || splitty.Contains("!contains") || splitty.Contains("startswith") || splitty.Contains("!startswith") || splitty.Contains("endswith") || splitty.Contains("!endswith"))
+                {
+                    List<string> daline = new List<string> { "comp", outputvar, "", "", "" };
+                    int piecey = 2;
+                    foreach (string jumbojosh in splitty)
+                    {
+                        if (specialcomparisons.ContainsKey(jumbojosh))
+                        {
+                            daline[3] = specialcomparisons[jumbojosh];
+                            piecey = 4;
+                        }
+                        else
+                            daline[piecey] += jumbojosh;
+                    }
+                    return daline;
+                }
+            }
+            List<string> isalisteventhebestchoiceforthis = new List<string>();
+            string workne = "";
+            for (int i = 0; i < toparse.Length; i++)
+            {
+                char curchar = toparse[i];
+                if (curchar == '=' || curchar == '≠' || curchar == '<' || curchar == '>' || curchar == '≤' || curchar == '≥' || curchar == '&' || curchar == '|')
+                {
+                    isalisteventhebestchoiceforthis.Add(workne);
+                    isalisteventhebestchoiceforthis.Add(curchar.ToString());
+                    workne = "";
+                }
+                else if (!char.IsWhiteSpace(curchar))
+                    workne += curchar;
+            }
+            isalisteventhebestchoiceforthis.Add(workne);
+
+            if (outputvar == string.Empty)
+                outputvar = isalisteventhebestchoiceforthis[0];
+            if (isalisteventhebestchoiceforthis.Count == 1)
+                return new List<string> { "set", outputvar, isalisteventhebestchoiceforthis[0] };
+            else
+                return new List<string> { "comp", outputvar, isalisteventhebestchoiceforthis[0], isalisteventhebestchoiceforthis[1], isalisteventhebestchoiceforthis[2] };
         }
         //output
         string outputfile()
