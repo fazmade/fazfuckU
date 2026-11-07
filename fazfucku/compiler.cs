@@ -22,6 +22,10 @@ namespace fazfucku
                 linedetector();
                 Console.WriteLine("compiler: main fazass conversion start");
                 mainfazassconvert();
+                Console.WriteLine("compiler: add markers start");
+                addmarkers();
+                Console.WriteLine("compiler: convert control flow start");
+                gototime();
                 Console.WriteLine("compiler: output file");
                 return outputfile();
             }
@@ -243,6 +247,10 @@ namespace fazfucku
             {
                 switch (lines[i].type)
                 {
+                    case linetype.theresNOTHING:
+                        lines.RemoveAt(i);
+                        i--;
+                        break;
                     case linetype.function:
                         lines[i].pieces.Remove("(");
                         lines[i].pieces.Remove(")");
@@ -409,6 +417,43 @@ namespace fazfucku
             else
                 return new List<string> { "comp", outputvar, isalisteventhebestchoiceforthis[0], isalisteventhebestchoiceforthis[1], isalisteventhebestchoiceforthis[2] };
         }
+        //add markers
+        void addmarkers()
+        {
+            for (int i = 0; i < lines.Count; i++)
+            {
+                if (lines[i].type == linetype.controlfunction)
+                {
+
+                }
+            }
+        }
+        int skipindentation(int start, int offset)
+        {
+            int curindent = 0;
+            for (int i = start; i < lines.Count; i++)
+            {
+                List<string> peepees = lines[i].pieces;
+                if (peepees[0] == "{")
+                    curindent++;
+                else if (peepees[0] == "}")
+                    curindent--;
+                if (curindent == offset)
+                    return i;
+            }
+            return start;
+        }
+        //convert control flow
+        void gototime()
+        {
+            for (int i = 0; i < lines.Count; i++)
+            {
+                if (lines[i].type == linetype.controlfunction)
+                {
+
+                }
+            }
+        }
         //output
         string outputfile()
         {
@@ -433,5 +478,10 @@ namespace fazfucku
         public enum markertype { start, next, end, unique }
         public markertype tipe;
         public int markerid;
+        public marker(markertype tipee, int idee)
+        {
+            tipe = tipee;
+            markerid = idee;
+        }
     }
 }
