@@ -15,6 +15,7 @@ namespace fazfucku
         private List<object> funcstack = new List<object>();
         private bool blankvar;
         public bool debug_runline = false;
+        private float mathhalfrot = (float)Math.PI;
         public void run()
         {
             while(counter != -1)
@@ -46,6 +47,10 @@ namespace fazfucku
                             return int.Parse(line[2]);
                         else
                             return int.Parse(line[1]);
+                    case "cdog"://conddogoto
+                        if (blankvar)
+                            return int.Parse(line[1]);
+                        break;
                     case "condset":
                         if (blankvar)
                             setvar(line[1], getvar(line[3]));
@@ -112,118 +117,138 @@ namespace fazfucku
                             setvar(line[1], result);
                         }
                         break;
-                    case "m": //math
+                    case "mx": //math any
                         {
                             float result = float.NaN;
                             float num1 = (float)getvar(line[3]);
-                            if (line[2] == "mx" || line[2] == "mn") //max min
-                            { //operators that can take any number of values
-                                switch (line[2])
-                                {
-                                    case "mx":
-                                        result = num1;
-                                        for (int i = 4; i < line.Length; i++)
-                                        {
-                                            float num = (float)getvar(line[i]);
-                                            if (num > result)
-                                                result = num;
-                                        }
-                                        break;
-                                    case "mn":
-                                        result = num1;
-                                        for (int i = 4; i < line.Length; i++)
-                                        {
-                                            float num = (float)getvar(line[i]);
-                                            if (num < result)
-                                                result = num;
-                                        }
-                                        break;
-                                }
-                            }
-                            else
+                            switch (line[2])
                             {
-                                switch (line.Length)
-                                {
-                                    case 4:
-                                        switch (line[2])
-                                        {
-                                            case "a"://abs
-                                                if (num1 < 0f)
-                                                    result = -num1;
-                                                else
-                                                    result = num1;
-                                                break;
-                                            case "s"://sign
-                                                if (num1 == 0f)
-                                                    result = 0f;
-                                                else if (num1 > 0f)
-                                                    result = 1f;
-                                                else if (num1 < 0f)
-                                                    result = -1f;
-                                                break;
-                                            case "sq": //sqrt
-                                                result = (float)Math.Sqrt(num1);
-                                                break;
-                                        }
-                                        break;
-                                    case 5:
-                                        float num2 = (float)getvar(line[4]);
-                                        switch (line[2])
-                                        {
-                                            case "+":
-                                                result = num1 + num2;
-                                                break;
-                                            case "-":
-                                                result = num1 - num2;
-                                                break;
-                                            case "×":
-                                                result = num1 * num2;
-                                                break;
-                                            case "÷":
-                                                result = num1 / num2;
-                                                break;
-                                            case "%":
-                                                result = num1 % num2;
-                                                break;
-                                            case "^":
-                                                result = (float)Math.Pow(num1, num2);
-                                                break;
-                                            case "mx": //max
-                                                if (num1 > num2)
-                                                    result = num1;
-                                                else
-                                                    result = num2;
-                                                break;
-                                            case "mn": //min
-                                                if (num1 < num2)
-                                                    result = num1;
-                                                else
-                                                    result = num2;
-                                                break;
-                                            case "rn": //round
-                                                result = (float)Math.Round(num1 / num2) * num2;
-                                                break;
-                                            case "fl": //floor
-                                                result = (float)Math.Floor(num1 / num2) * num2;
-                                                break;
-                                            case "cl": //cieling
-                                                result = (float)Math.Ceiling(num1 / num2) * num2;
-                                                break;
-                                            case "si": //sin
-                                                result = (float)Math.Sin(num1 * Math.PI / num2);
-                                                break;
-                                            case "co": //cos
-                                                result = (float)Math.Cos(num1 * Math.PI / num2);
-                                                break;
-                                            case "ta": //tan
-                                                result = (float)Math.Tan(num1 * Math.PI / num2);
-                                                break;
-                                            case "lg": //log
-                                                result = (float)Math.Log(num1, num2);
-                                                break;
-                                        }
-                                        break;
-                                }
+                                case "mx":
+                                    result = num1;
+                                    for (int i = 4; i < line.Length; i++)
+                                    {
+                                        float num = (float)getvar(line[i]);
+                                        if (num > result)
+                                            result = num;
+                                    }
+                                    break;
+                                case "mn":
+                                    result = num1;
+                                    for (int i = 4; i < line.Length; i++)
+                                    {
+                                        float num = (float)getvar(line[i]);
+                                        if (num < result)
+                                            result = num;
+                                    }
+                                    break;
+                            }
+                            setvar(line[1], result);
+                        }
+                        break;
+                    case "m1": //math 1
+                        {
+                            float result = float.NaN;
+                            float num1 = (float)getvar(line[3]);
+                            switch (line[2])
+                            {
+                                case "a"://abs
+                                    if (num1 < 0f)
+                                        result = -num1;
+                                    else
+                                        result = num1;
+                                    break;
+                                case "s"://sign
+                                    if (num1 == 0f)
+                                        result = 0f;
+                                    else if (num1 > 0f)
+                                        result = 1f;
+                                    else if (num1 < 0f)
+                                        result = -1f;
+                                    break;
+                                case "sq": //sqrt
+                                    result = (float)Math.Sqrt(num1);
+                                    break;
+                            }
+                            setvar(line[1], result);
+                        }
+                        break;
+                    case "m2": //math 2
+                        {
+                            float result = float.NaN;
+                            float num1 = (float)getvar(line[3]);
+                            float num2 = (float)getvar(line[4]);
+                            switch (line[2])
+                            {
+                                case "+":
+                                    result = num1 + num2;
+                                    break;
+                                case "-":
+                                    result = num1 - num2;
+                                    break;
+                                case "×":
+                                    result = num1 * num2;
+                                    break;
+                                case "÷":
+                                    result = num1 / num2;
+                                    break;
+                                case "%":
+                                    result = num1 % num2;
+                                    break;
+                                case "^":
+                                    result = (float)Math.Pow(num1, num2);
+                                    break;
+                                case "mx": //max
+                                    if (num1 > num2)
+                                        result = num1;
+                                    else
+                                        result = num2;
+                                    break;
+                                case "mn": //min
+                                    if (num1 < num2)
+                                        result = num1;
+                                    else
+                                        result = num2;
+                                    break;
+                                case "rn": //round
+                                    result = (float)Math.Round(num1 / num2) * num2;
+                                    break;
+                                case "fl": //floor
+                                    result = (float)Math.Floor(num1 / num2) * num2;
+                                    break;
+                                case "cl": //cieling
+                                    result = (float)Math.Ceiling(num1 / num2) * num2;
+                                    break;
+                                case "lg": //log
+                                    result = (float)Math.Log(num1, num2);
+                                    break;
+                            }
+                            setvar(line[1], result);
+                        }
+                        break;
+                    case "mt": //math trig
+                        {
+                            float result = float.NaN;
+                            float num = (float)getvar(line[3]) * (float)Math.PI / mathhalfrot;
+                            switch (line[2])
+                            {
+                                case "si": //sin
+                                    result = (float)Math.Sin(num);
+                                    break;
+                                case "co": //cos
+                                    result = (float)Math.Cos(num);
+                                    break;
+                                case "ta": //tan
+                                    result = (float)Math.Tan(num);
+                                    break;
+                                case "asi": //asin
+                                    result = (float)Math.Asin(num);
+                                    break;
+                                case "aco": //acos
+                                    result = (float)Math.Acos(num);
+                                    break;
+                                case "ata": //atan
+                                    result = (float)Math.Atan(num);
+                                    break;
                             }
                             setvar(line[1], result);
                         }
@@ -334,6 +359,11 @@ namespace fazfucku
                 blankvar = (bool)value;
                 return;
             }
+            if (identifier == "mathhalfrot")
+            {
+                mathhalfrot = (float)value;
+                return;
+            }
             if (identifier == "_")
                 return;
             if (identifier.StartsWith("S"))
@@ -358,6 +388,8 @@ namespace fazfucku
                 return false;
             if (identifier == "π")
                 return (float)Math.PI;
+            if (identifier == "mathfalfrot")
+                return mathhalfrot;
             if (identifier == "_")
             {
                 doerror("cannot get value from discard!");
