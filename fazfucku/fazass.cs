@@ -327,15 +327,16 @@ namespace fazfucku
                     case "blah":
                         Console.WriteLine("blah" + line[1]);
                         break;
-                    case "debug_funcstack":
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine(string.Join("|", funcstack));
-                        Console.ResetColor();
-                        break;
                     case "debug_variables":
                         Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine("---globaldict");
                         foreach (KeyValuePair<string, object> entry in globaldict)
                             Console.WriteLine(entry.Key + " : " + entry.Value.ToString());
+                        Console.WriteLine("---funcstack");
+                        Console.WriteLine(string.Join("|", funcstack));
+                        Console.WriteLine("---other");
+                        Console.WriteLine("blankvar: " + blankvar);
+                        Console.WriteLine("mathhalfrot: " + mathhalfrot);
                         Console.ResetColor();
                         break;
                 }

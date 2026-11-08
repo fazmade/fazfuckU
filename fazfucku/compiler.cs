@@ -536,7 +536,17 @@ namespace fazfucku
                     string token = lines[i].pieces[j];
                     if (token.StartsWith("@"))
                     {
-                        if (token.StartsWith("@start"))
+                        if (token.StartsWith("@+"))
+                        {
+                            int offset = int.Parse(token.Substring(2));
+                            lines[i].pieces[j] = (i + offset).ToString();
+                        }
+                        else if (token.StartsWith("@-"))
+                        {
+                            int offset = int.Parse(token.Substring(2));
+                            lines[i].pieces[j] = (i - offset).ToString();
+                        }
+                        else if (token.StartsWith("@start"))
                         {
                             int searchid = int.Parse(token.Substring(6));
                             lines[i].pieces[j] = searchmarker(i, markertype.start, searchid, -1).ToString();
