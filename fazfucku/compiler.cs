@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,12 +23,12 @@ namespace fazfucku
                 linedetector();
                 Console.WriteLine("compiler: main fazass conversion start");
                 mainfazassconvert();
-                Console.WriteLine("compiler: add markers start");
-                addmarkers();
                 Console.WriteLine("compiler: convert control flow start");
                 gototime();
+                Console.WriteLine("compiler: remove brackets start");
+                removebrackets();
                 Console.WriteLine("compiler: output file");
-                return outputfile();
+                return outputfile(true);
             }
             catch (Exception e)
             {
@@ -417,14 +418,55 @@ namespace fazfucku
             else
                 return new List<string> { "comp", outputvar, isalisteventhebestchoiceforthis[0], isalisteventhebestchoiceforthis[1], isalisteventhebestchoiceforthis[2] };
         }
-        //add markers
-        void addmarkers()
+        //control flow conversion
+        void gototime()
         {
+            int loopid = 0;
             for (int i = 0; i < lines.Count; i++)
             {
                 if (lines[i].type == linetype.controlfunction)
                 {
-
+                    if (lines[i].pieces[0] == "if")
+                    {
+                        lineinfo compline = new lineinfo();
+                        compline.pieces = parsecond(lines[i].pieces[2], "B");
+                        compline.originallineid = lines[i].originallineid;
+                        lines.Insert(i, compline);
+                        i++;
+                        lines[i].pieces = new List<string> { "conddontgoto", "@next" + loopid };
+                        bool wouwie = true;
+                        int checkers = i;
+                        while(wouwie)
+                        {
+                            checkers = skipindentation(checkers + 1, 0) + 1;
+                            if (lines[checkers].pieces[0] == "elif")
+                            {
+                                compline = new lineinfo();
+                                compline.pieces = new List<string> { "goto", "@end" + loopid };
+                                compline.originallineid = lines[checkers].originallineid;
+                                lines.Insert(checkers, compline);
+                                checkers++;
+                                compline = new lineinfo();
+                                compline.pieces = parsecond(lines[checkers].pieces[2], "B");
+                                compline.originallineid = lines[checkers].originallineid;
+                                lines.Insert(checkers, compline);
+                                lines[checkers].markers.Add(new marker(marker.markertype.next, loopid));
+                                checkers++;
+                                lines[checkers].pieces = new List<string> { "conddontgoto", "@next" + loopid };
+                            }
+                            else if (lines[checkers].pieces[0] == "else")
+                            {
+                                lines[checkers].pieces = new List<string> { "goto", "@end" + loopid };
+                                checkers++;
+                                lines[checkers].markers.Add(new marker(marker.markertype.next, loopid));
+                            }
+                            else
+                                wouwie = false;
+                        }
+                        lines[checkers].markers.Add(new marker(marker.markertype.end, loopid));
+                        loopid++;
+                    }
+                    //add while
                 }
             }
         }
@@ -443,24 +485,42 @@ namespace fazfucku
             }
             return start;
         }
-        //convert control flow
-        void gototime()
+        //remove brackets
+        void removebrackets()
         {
             for (int i = 0; i < lines.Count; i++)
             {
-                if (lines[i].type == linetype.controlfunction)
+                if (lines[i].type == linetype.standalone)
                 {
-
+                    if (lines[i].pieces[0] == "{" || lines[i].pieces[0] == "}")
+                    {
+                        removeline(i);
+                        i--;
+                    }
                 }
             }
         }
+        void removeline(int index)
+        {
+            if (lines[index].markers.Count > 0)
+            {
+                List<marker> markys = lines[index].markers;
+                lines.RemoveAt(index);
+                lines[index].markers.AddRange(markys);
+            }
+            else
+                lines.RemoveAt(index);
+        }
         //output
-        string outputfile()
+        string outputfile(bool addmarkers)
         {
             StringBuilder thebuilder = new StringBuilder();
             foreach (lineinfo lijn in lines)
             {
-                thebuilder.AppendLine(string.Join("¦", lijn.pieces));
+                if (addmarkers && lijn.markers.Count > 0)
+                    thebuilder.AppendLine(string.Join("¦", lijn.pieces) + "<" + string.Join("<", lijn.markers));
+                else
+                    thebuilder.AppendLine(string.Join("¦", lijn.pieces));
             }
             thebuilder.Remove(thebuilder.Length - 1, 1);
             return thebuilder.ToString();
@@ -482,6 +542,10 @@ namespace fazfucku
         {
             tipe = tipee;
             markerid = idee;
+        }
+        public override string ToString()
+        {
+            return tipe.ToString() + markerid.ToString();
         }
     }
 }

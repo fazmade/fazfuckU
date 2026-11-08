@@ -1,0 +1,83 @@
+x=2
+y=1
+if ⟨x = 0⟩
+{
+	blah(x1)
+	if ⟨y = 0⟩
+	{
+		blah(y0)
+	}
+	elif ⟨y = 1⟩
+	{
+		blah(y1)
+	}
+	elif ⟨y = 2⟩
+	{
+		blah(y2)
+	}
+	else
+	{
+		blah(yelse)
+	}
+}
+elif ⟨x = 1⟩
+{
+	blah(x2)
+	if ⟨y = 0⟩
+	{
+		blah(y0)
+	}
+	elif ⟨y = 1⟩
+	{
+		blah(y1)
+	}
+	elif ⟨y = 2⟩
+	{
+		blah(y2)
+	}
+	else
+	{
+		blah(yelse)
+	}
+}
+elif ⟨x = 2⟩
+{
+	blah(x3)
+	if ⟨y = 0⟩
+	{
+		blah(y0)
+	}
+	elif ⟨y = 1⟩
+	{
+		blah(y1)
+	}
+	elif ⟨y = 2⟩
+	{
+		blah(y2)
+	}
+	else
+	{
+		blah(yelse)
+	}
+}
+else
+{
+	blah(xelse)
+	if ⟨y = 0⟩
+	{
+		blah(y0)
+	}
+	elif ⟨y = 1⟩
+	{
+		blah(y1)
+	}
+	elif ⟨y = 2⟩
+	{
+		blah(y2)
+	}
+	else
+	{
+		blah(yelse)
+	}
+}
+end
