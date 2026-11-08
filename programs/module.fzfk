@@ -1,0 +1,7 @@
+This is for when i add the insert feature
+func parsen[out](in)
+{
+	out=string_join("#",in)
+	out=parse(out)
+	return
+}
