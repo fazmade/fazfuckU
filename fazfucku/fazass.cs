@@ -69,49 +69,51 @@ namespace fazfucku
                     case "c":
                         {
                             bool result = false;
+                            object obj1 = getvar(line[2]);
+                            object obj2 = getvar(line[4]);
                             switch (line[3])
                             {
                                 case "=":
-                                    result = getvar(line[2]) == getvar(line[4]);
+                                    result = obj1.Equals(obj2);
                                     break;
                                 case "≠":
-                                    result = getvar(line[2]) != getvar(line[4]);
+                                    result = !obj1.Equals(obj2);
                                     break;
                                 case "<":
-                                    result = (float)getvar(line[2]) < (float)getvar(line[4]);
+                                    result = (float)obj1 < (float)obj2;
                                     break;
                                 case ">":
-                                    result = (float)getvar(line[2]) > (float)getvar(line[4]);
+                                    result = (float)obj1 > (float)obj2;
                                     break;
                                 case "≤":
-                                    result = (float)getvar(line[2]) <= (float)getvar(line[4]);
+                                    result = (float)obj1 <= (float)obj2;
                                     break;
                                 case "≥":
-                                    result = (float)getvar(line[2]) >= (float)getvar(line[4]);
+                                    result = (float)obj1 >= (float)obj2;
                                     break;
                                 case "&":
-                                    result = (bool)getvar(line[2]) && (bool)getvar(line[4]);
+                                    result = (bool)obj1 && (bool)obj2;
                                     break;
                                 case "|":
-                                    result = (bool)getvar(line[2]) || (bool)getvar(line[4]);
+                                    result = (bool)obj1 || (bool)obj2;
                                     break;
                                 case "c":
-                                    result = ((string)getvar(line[2])).Contains((string)getvar(line[4]));
+                                    result = ((string)obj1).Contains((string)obj2);
                                     break;
                                 case "!c":
-                                    result = !((string)getvar(line[2])).Contains((string)getvar(line[4]));
+                                    result = !((string)obj1).Contains((string)obj2);
                                     break;
                                 case "s":
-                                    result = ((string)getvar(line[2])).StartsWith((string)getvar(line[4]));
+                                    result = ((string)obj1).StartsWith((string)obj2);
                                     break;
                                 case "!s":
-                                    result = !((string)getvar(line[2])).StartsWith((string)getvar(line[4]));
+                                    result = !((string)obj1).StartsWith((string)obj2);
                                     break;
                                 case "e":
-                                    result = ((string)getvar(line[2])).EndsWith((string)getvar(line[4]));
+                                    result = ((string)obj1).EndsWith((string)obj2);
                                     break;
                                 case "!e":
-                                    result = !((string)getvar(line[2])).EndsWith((string)getvar(line[4]));
+                                    result = !((string)obj1).EndsWith((string)obj2);
                                     break;
                             }
                             setvar(line[1], result);
@@ -294,7 +296,7 @@ namespace fazfucku
                                 setvar(line[1], jumbojosh.ToString());
                         }
                         break;
-                    case "parse": //parse
+                    case "prs": //parse
                         setvar(line[1], getvar((string)getvar(line[2]))); //aha yes.
                         break;
                     case "str_rep": //string_replace
@@ -311,6 +313,14 @@ namespace fazfucku
                         break;
                     case "str_spl": //string_split
                         setvar(line[1], ((string)getvar(line[2])).Split(((string)getvar(line[3]))[0]));
+                        break;
+                    case "str_joe": //string_join
+                        {
+                            string result = (string)getvar(line[2]);
+                            for (int i = 3; i < line.Length; i++)
+                                result += (string)getvar(line[i]);
+                            setvar(line[1], result);
+                        }
                         break;
 
                     //COMSOEL?!

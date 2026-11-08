@@ -3,62 +3,62 @@ x=2
 y=1
 if ⟨x = 0⟩
 {
-	blah(x1)
+	blah(x0)
 	if ⟨y = 0⟩
 	{
-		blah(y0)
+		blah(x0y0)
 	}
 	elif ⟨y = 1⟩
 	{
-		blah(y1)
+		blah(x0y1)
 	}
 	elif ⟨y = 2⟩
 	{
-		blah(y2)
+		blah(x0y2)
 	}
 	else
 	{
-		blah(yelse)
+		blah(x0yelse)
 	}
 }
 elif ⟨x = 1⟩
 {
-	blah(x2)
+	blah(x1)
 	if ⟨y = 0⟩
 	{
-		blah(y0)
+		blah(x1y0)
 	}
 	elif ⟨y = 1⟩
 	{
-		blah(y1)
+		blah(x1y1)
 	}
 	elif ⟨y = 2⟩
 	{
-		blah(y2)
+		blah(x1y2)
 	}
 	else
 	{
-		blah(yelse)
+		blah(x1yelse)
 	}
 }
 elif ⟨x = 2⟩
 {
-	blah(x3)
+	blah(x2)
 	if ⟨y = 0⟩
 	{
-		blah(y0)
+		blah(x2y0)
 	}
 	elif ⟨y = 1⟩
 	{
-		blah(y1)
+		blah(x2y1)
 	}
 	elif ⟨y = 2⟩
 	{
-		blah(y2)
+		blah(x2y2)
 	}
 	else
 	{
-		blah(yelse)
+		blah(x2yelse)
 	}
 }
 else
@@ -66,19 +66,19 @@ else
 	blah(xelse)
 	if ⟨y = 0⟩
 	{
-		blah(y0)
+		blah(xelsey0)
 	}
 	elif ⟨y = 1⟩
 	{
-		blah(y1)
+		blah(xelsey1)
 	}
 	elif ⟨y = 2⟩
 	{
-		blah(y2)
+		blah(xelsey2)
 	}
 	else
 	{
-		blah(yelse)
+		blah(xelseyelse)
 	}
 }
 end

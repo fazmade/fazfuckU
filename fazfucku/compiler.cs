@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using static fazfucku.marker;
 
@@ -12,6 +11,8 @@ namespace fazfucku
     {
         public string[] inputfile;
         List<lineinfo> lines;
+        public bool includemarkers;
+        public int prematureoutput = -1;
         public string compile()
         {
             try
@@ -19,20 +20,34 @@ namespace fazfucku
                 lines = new List<lineinfo>();
                 Console.WriteLine("compiler: initial lexer start");
                 initiallexer();
+                if (prematureoutput == 1)
+                    return outputfile(false);
                 Console.WriteLine("compiler: line detection start");
                 linedetector();
+                if (prematureoutput == 2)
+                    return outputfile(false);
                 Console.WriteLine("compiler: main fazass conversion start");
                 mainfazassconvert();
+                if (prematureoutput == 3)
+                    return outputfile(false);
                 Console.WriteLine("compiler: convert control flow start");
                 gototime();
+                if (prematureoutput == 4)
+                    return outputfile(true);
                 Console.WriteLine("compiler: remove brackets start");
                 removebrackets();
+                if (prematureoutput == 5)
+                    return outputfile(true);
                 Console.WriteLine("compiler: convert from dynamic start");
                 convertfromdynamic();
+                if (prematureoutput == 6)
+                    return outputfile(true);
                 Console.WriteLine("compiler: replace longer function names");
                 makeshort();
+                if (prematureoutput == 7)
+                    return outputfile(true);
                 Console.WriteLine("compiler: output file");
-                return outputfile(false);
+                return outputfile(includemarkers);
             }
             catch (Exception e)
             {
@@ -464,20 +479,20 @@ namespace fazfucku
                                 compline.pieces = parsecond(lines[checkers].pieces[2], "B");
                                 compline.originallineid = lines[checkers].originallineid;
                                 lines.Insert(checkers, compline);
-                                lines[checkers].markers.Add(new marker(marker.markertype.next, loopid));
+                                lines[checkers].markers.Add(new marker(markertype.next, loopid));
                                 checkers++;
                                 lines[checkers].pieces = new List<string> { "conddontgoto", "@next" + loopid };
                             }
                             else if (lines[checkers].pieces[0] == "else")
                             {
                                 lines[checkers].pieces = new List<string> { "goto", "@end" + loopid };
-                                checkers++;
-                                lines[checkers].markers.Add(new marker(marker.markertype.next, loopid));
+                                //checkers++;
+                                lines[checkers+1].markers.Add(new marker(markertype.next, loopid));
                             }
                             else
                                 wouwie = false;
                         }
-                        lines[checkers].markers.Add(new marker(marker.markertype.end, loopid));
+                        lines[checkers].markers.Add(new marker(markertype.end, loopid));
                         loopid++;
                     }
                     //add while
@@ -600,7 +615,7 @@ namespace fazfucku
                     lines[i].pieces[0] = shorthand[functio];
             }
         }
-        Dictionary<string, string> shorthand = new Dictionary<string, string>
+        public Dictionary<string, string> shorthand = new Dictionary<string, string>
         {
             { "print", "pr" },
             { "goto", "go" },
@@ -614,11 +629,13 @@ namespace fazfucku
             { "fstk_popgoto", "fg" },
             { "fstk_pop", "fp" },
             { "to_string", "tstr" },
+            { "parse", "prs" },
             { "string_replace", "str_rep" },
             { "string_lower", "str_lw" },
             { "string_upper", "str_up" },
             { "string_substring", "str_sub" },
-            { "string_split", "str_spl" }
+            { "string_split", "str_spl" },
+            { "string_join", "str_joe" }
         };
         //output
         string outputfile(bool addmarkers)

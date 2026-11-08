@@ -1,9 +1,9 @@
-supports_arbitrary_parameter_counts supports_lists supports_dictionaries
+supports_arbitrary_parameter_counts supports_lists
 
 hooks
 presskey nocatch 1
 
-shorthands
+function shorthands
 console_getline cons_gtline
 console_checkescape cons_cheesc
 console_getkey cons_gtkey
