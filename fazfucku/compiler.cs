@@ -92,7 +92,6 @@ namespace fazfucku
             curlextype = lextype.defauld;
             char prevchar = '\0';
             char curchar = '\0';
-            inputfile[0] = string.Empty;
             string dafile = string.Join("\n", inputfile);
             for (int i = 0; i < dafile.Length; i++)
             {
