@@ -153,12 +153,6 @@ namespace fazfucku
                             float num1 = (float)getvar(line[3]);
                             switch (line[2])
                             {
-                                case "a"://abs
-                                    if (num1 < 0f)
-                                        result = -num1;
-                                    else
-                                        result = num1;
-                                    break;
                                 case "s"://sign
                                     if (num1 == 0f)
                                         result = 0f;
@@ -220,7 +214,7 @@ namespace fazfucku
                                 case "cl": //cieling
                                     result = (float)Math.Ceiling(num1 / num2) * num2;
                                     break;
-                                case "lg": //log
+                                case "_": //log
                                     result = (float)Math.Log(num1, num2);
                                     break;
                             }
@@ -233,22 +227,22 @@ namespace fazfucku
                             float num = (float)getvar(line[3]) * (float)Math.PI / mathhalfrot;
                             switch (line[2])
                             {
-                                case "si": //sin
+                                case "s": //sin
                                     result = (float)Math.Sin(num);
                                     break;
-                                case "co": //cos
+                                case "c": //cos
                                     result = (float)Math.Cos(num);
                                     break;
-                                case "ta": //tan
+                                case "t": //tan
                                     result = (float)Math.Tan(num);
                                     break;
-                                case "asi": //asin
+                                case "as": //asin
                                     result = (float)Math.Asin(num);
                                     break;
-                                case "aco": //acos
+                                case "ac": //acos
                                     result = (float)Math.Acos(num);
                                     break;
-                                case "ata": //atan
+                                case "at": //atan
                                     result = (float)Math.Atan(num);
                                     break;
                             }

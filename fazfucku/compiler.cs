@@ -599,22 +599,6 @@ namespace fazfucku
             return startline;
         }
         //replace longer function names
-        void makeshort()
-        {
-            for (int i = 0; i < lines.Count; i++)
-            {
-                string functio = lines[i].pieces[0];
-                if (functio == "math")
-                {
-                    if (lines[i].pieces[2] == "mx" || lines[i].pieces[2] == "mn")
-                        lines[i].pieces[0] = "mx";
-                    else
-                        lines[i].pieces[0] = "m" + (lines[i].pieces.Count - 3);
-                }
-                else if (shorthand.ContainsKey(functio))
-                    lines[i].pieces[0] = shorthand[functio];
-            }
-        }
         public Dictionary<string, string> shorthand = new Dictionary<string, string>
         {
             { "print", "pr" },
@@ -637,6 +621,44 @@ namespace fazfucku
             { "string_split", "str_spl" },
             { "string_join", "str_joe" }
         };
+        public Dictionary<string, string[]> mathfunc = new Dictionary<string, string[]>
+        {
+            { "round", new string[] { "m2", "rn" } },
+            { "floor", new string[] { "m2", "fl" } },
+            { "flr", new string[] { "m2", "fl" } },
+            { "ceiling", new string[] { "m2", "cl" } },
+            { "ceil", new string[] { "m2", "cl" } },
+            { "sin", new string[] { "mt", "s" } },
+            { "cos", new string[] { "mt", "c" } },
+            { "tan", new string[] { "mt", "t" } },
+            { "asin", new string[] { "mt", "as" } },
+            { "acos", new string[] { "mt", "ac" } },
+            { "atan", new string[] { "mt", "at" } },
+            { "sign", new string[] { "m1", "s" } },
+            { "max", new string[] { "mx", "mx" } },
+            { "min", new string[] { "mx", "mn" } }
+        };
+        void makeshort()
+        {
+            for (int i = 0; i < lines.Count; i++)
+            {
+                string functio = lines[i].pieces[0];
+                if (functio == "math")
+                {
+                    if (lines[i].pieces[2] == "mx" || lines[i].pieces[2] == "mn")
+                        lines[i].pieces[0] = "mx";
+                    else
+                        lines[i].pieces[0] = "m" + (lines[i].pieces.Count - 3);
+                }
+                else if (mathfunc.ContainsKey(functio))
+                {
+                    lines[i].pieces[0] = mathfunc[functio][0];
+                    lines[i].pieces.Insert(2, mathfunc[functio][1]);
+                }
+                else if (shorthand.ContainsKey(functio))
+                    lines[i].pieces[0] = shorthand[functio];
+            }
+        }
         //output
         string outputfile(bool addmarkers)
         {
