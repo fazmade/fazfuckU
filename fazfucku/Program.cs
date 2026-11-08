@@ -52,7 +52,7 @@ namespace fazfucku
                         else
                         {
                             fazfuckucompiler compilah = new fazfuckucompiler();
-                            compilah.inputfile = File.ReadAllText(filelocation);
+                            compilah.inputfile = File.ReadAllLines(filelocation);
                             string thecompiled = compilah.compile();
                             if (thecompiled != string.Empty)
                             {

@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
+using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
+using static fazfucku.marker;
 
 namespace fazfucku
 {
     enum linetype { math, mathdirect, boel, booldirect, function, functionset, standalone, controlfunction, set, definationhookfunc, definationsection, broken, theresNOTHING, functionboolnargumentset, fazfuck, controlfunctionarged }
     internal class fazfuckucompiler
     {
-        public string inputfile;
+        public string[] inputfile;
         List<lineinfo> lines;
         public string compile()
         {
@@ -27,14 +27,24 @@ namespace fazfucku
                 gototime();
                 Console.WriteLine("compiler: remove brackets start");
                 removebrackets();
+                Console.WriteLine("compiler: convert from dynamic start");
+                convertfromdynamic();
+                Console.WriteLine("compiler: replace longer function names");
+                makeshort();
                 Console.WriteLine("compiler: output file");
-                return outputfile(true);
+                return outputfile(false);
             }
             catch (Exception e)
             {
                 Console.WriteLine("compiler: " + e.ToString());
                 return string.Empty;
             }
+        }
+        private void doerror(string err)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("compiler: " + err);
+            Console.ResetColor();
         }
         //initial lexer
         lineinfo workingline;
@@ -67,9 +77,11 @@ namespace fazfucku
             curlextype = lextype.defauld;
             char prevchar = '\0';
             char curchar = '\0';
-            for (int i = 0; i < inputfile.Length; i++)
+            inputfile[0] = string.Empty;
+            string dafile = string.Join("\n", inputfile);
+            for (int i = 0; i < dafile.Length; i++)
             {
-                curchar = inputfile[i];
+                curchar = dafile[i];
                 switch (curlextype)
                 {
                     case lextype.defauld:
@@ -83,7 +95,7 @@ namespace fazfucku
                                 poptoken();
                             }
                         }
-                        else if (curchar == '\"')
+                        else if (curchar == '\"' || curchar == '«')
                         {
                             workingtoken = "\"";
                             curlextype = lextype.stringe;
@@ -99,7 +111,7 @@ namespace fazfucku
                             while (char.IsWhiteSpace(curchar) && curchar != '\n')
                             {
                                 i++;
-                                curchar = inputfile[i];
+                                curchar = dafile[i];
                             }
                             if (!(curchar == '\n' || char.IsUpper(curchar)))
                             {
@@ -112,7 +124,7 @@ namespace fazfucku
                             while (curchar != '\n')
                             {
                                 i++;
-                                curchar = inputfile[i];
+                                curchar = dafile[i];
                             }
                             popline();
                         }
@@ -135,7 +147,7 @@ namespace fazfucku
                     case lextype.stringe:
                         if (prevchar == '\\')
                         {
-                            if (curchar == '\"' || curchar == '\\')
+                            if (curchar == '\"' || curchar == '\\' || curchar == '»')
                                 workingtoken += curchar;
                             else if (curchar == 'n')
                                 workingtoken += '\n';
@@ -146,7 +158,7 @@ namespace fazfucku
                             }
                         }
                         else if (curchar == '\\') { } //NOTHING HAPPENS
-                        else if (curchar == '\"')
+                        else if (curchar == '\"' || curchar == '»')
                         {
                             poptoken();
                             curlextype = lextype.defauld;
@@ -183,7 +195,9 @@ namespace fazfucku
             {
                 linetype ligmaballs = getlinetype(lines[i].pieces);
                 lines[i].type = ligmaballs;
-                if (ligmaballs == linetype.controlfunction || (ligmaballs == linetype.standalone && (lines[i].pieces[0] == "else" || lines[i].pieces[0] == "otherwise")))
+                if (ligmaballs == linetype.broken)
+                    doerror("cannot get the type of line for " + lines[i].originallineid + " (" + i + ")!");
+                else if (ligmaballs == linetype.controlfunction || (ligmaballs == linetype.standalone && (lines[i].pieces[0] == "else" || lines[i].pieces[0] == "otherwise")))
                 {
                     if (lines[i+1].pieces[0] != "{")
                     {
@@ -483,6 +497,7 @@ namespace fazfucku
                 if (curindent == offset)
                     return i;
             }
+            doerror("cannot skip indentation with an offset of " + offset + " starting at" + lines[start].originallineid + " (" + start + ")!");
             return start;
         }
         //remove brackets
@@ -511,6 +526,90 @@ namespace fazfucku
             else
                 lines.RemoveAt(index);
         }
+        //convert from dynamic
+        void convertfromdynamic()
+        {
+            for (int i = 0; i < lines.Count; i++)
+            {
+                for (int j = 0; j < lines[i].pieces.Count; j++)
+                {
+                    string token = lines[i].pieces[j];
+                    if (token.StartsWith("@"))
+                    {
+                        if (token.StartsWith("@start"))
+                        {
+                            int searchid = int.Parse(token.Substring(6));
+                            lines[i].pieces[j] = searchmarker(i, markertype.start, searchid, -1).ToString();
+                        }
+                        else if (token.StartsWith("@next"))
+                        {
+                            int searchid = int.Parse(token.Substring(5));
+                            lines[i].pieces[j] = searchmarker(i, markertype.next, searchid, 1).ToString();
+                        }
+                        else if (token.StartsWith("@end"))
+                        {
+                            int searchid = int.Parse(token.Substring(4));
+                            lines[i].pieces[j] = searchmarker(i, markertype.end, searchid, 1).ToString();
+                        }
+                    }
+                    else if (token.StartsWith("-") || token.StartsWith("+") || char.IsDigit(token[0]))
+                    {
+                        if (float.TryParse(token.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out _))
+                            lines[i].pieces[j] = "#" + token.Replace(',', '.');
+                    }
+                }
+            }
+        }
+        int searchmarker(int startline, markertype tipee, int idee, int direction)
+        {
+            int curline = startline;
+            while(curline != 0 && curline != lines.Count)
+            {
+                curline += direction;
+                if (lines[curline].hasmarker(tipee, idee))
+                    return curline;
+                else if (tipee == markertype.next && lines[curline].hasmarker(markertype.end, idee))
+                    return curline;
+            }
+            return startline;
+        }
+        //replace longer function names
+        void makeshort()
+        {
+            for (int i = 0; i < lines.Count; i++)
+            {
+                string functio = lines[i].pieces[0];
+                if (functio == "math")
+                {
+                    if (lines[i].pieces[2] == "mx" || lines[i].pieces[2] == "mn")
+                        lines[i].pieces[0] = "mx";
+                    else
+                        lines[i].pieces[0] = "m" + (lines[i].pieces.Count - 3);
+                }
+                else if (shorthand.ContainsKey(functio))
+                    lines[i].pieces[0] = shorthand[functio];
+            }
+        }
+        Dictionary<string, string> shorthand = new Dictionary<string, string>
+        {
+            { "print", "pr" },
+            { "goto", "go" },
+            { "conddontgoto", "cdg" },
+            { "conddogoto", "cdog" },
+            { "comp", "c" },
+            { "set", "s" },
+            { "undef", "ud" },
+            { "fstk_add", "fa" },
+            { "fstk_discard", "fd" },
+            { "fstk_popgoto", "fg" },
+            { "fstk_pop", "fp" },
+            { "to_string", "tstr" },
+            { "string_replace", "str_rep" },
+            { "string_lower", "str_lw" },
+            { "string_upper", "str_up" },
+            { "string_substring", "str_sub" },
+            { "string_split", "str_spl" }
+        };
         //output
         string outputfile(bool addmarkers)
         {
@@ -522,7 +621,6 @@ namespace fazfucku
                 else
                     thebuilder.AppendLine(string.Join("¦", lijn.pieces));
             }
-            thebuilder.Remove(thebuilder.Length - 1, 1);
             return thebuilder.ToString();
         }
     }
@@ -532,6 +630,17 @@ namespace fazfucku
         public List<marker> markers = new List<marker>();
         public int originallineid = -1;
         public linetype type = linetype.broken;
+        public bool hasmarker(markertype tipee, int idee)
+        {
+            if (markers.Count == 0)
+                return false;
+            foreach (marker damarker in markers)
+            {
+                if (damarker.markerid == idee && damarker.tipe == tipee)
+                    return true;
+            }
+            return false;
+        }
     }
     class marker
     {

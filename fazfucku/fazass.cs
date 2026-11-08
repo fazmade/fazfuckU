@@ -31,12 +31,12 @@ namespace fazfucku
             {
                 switch (line[0])
                 {
-                    case "print":
+                    case "pr":
                         Console.WriteLine(getvar(line[1]));
                         break;
                     case "end":
                         return -1;
-                    case "goto":
+                    case "go":
                         return int.Parse(line[1]);
                     case "cdg"://conddontgoto
                         if (!blankvar)
@@ -66,7 +66,7 @@ namespace fazfucku
                                 setvar(line[1], getvar(line[index + 4]));
                         }
                         break;
-                    case "comp":
+                    case "c":
                         {
                             bool result = false;
                             switch (line[3])
@@ -253,29 +253,29 @@ namespace fazfucku
                             setvar(line[1], result);
                         }
                         break;
-                    case "set":
+                    case "s":
                         setvar(line[1],getvar(line[2]));
                         break;
-                    case "undef":
+                    case "ud":
                         if (globaldict.ContainsKey(line[1]))
                             globaldict.Remove(line[1]);
                         break;
-                    case "fstk_a": //funcstack_add
+                    case "fa": //funcstack_add
                         for (int i = 1; i < line.Length; i++)
                         {
                             funcstack.Insert(0, getvar(line[i]));
                         }
                         break;
-                    case "fstk_d": //funcstack_discard
+                    case "fd": //funcstack_discard
                         funcstack.RemoveRange(0, int.Parse(line[1]));
                         break;
-                    case "fstk_pg": //funcstack_popgoto
+                    case "fg": //funcstack_popgoto
                         {
                             int jumbojosh = (int)funcstack[0];
                             funcstack.RemoveAt(0);
                             return jumbojosh;
                         }
-                    case "fstk_p": //funcstack_pop
+                    case "fp": //funcstack_pop
                         for (int i = 1; i < line.Length; i++)
                         {
                             setvar(line[i], funcstack[0]);
@@ -314,18 +314,29 @@ namespace fazfucku
                         break;
 
                     //COMSOEL?!
-                    case "cons_getline":
+                    case "cons_gtline":
                         setvar(line[1], Console.ReadLine());
                         break;
-                    case "cons_checkesc":
+                    case "cons_cheesc":
                         if (Console.KeyAvailable && Console.ReadKey().Key == ConsoleKey.Escape)
                             return -1;
+                        break;
+                    case "cons_gtkey":
+                        setvar(line[1], (int)Console.ReadKey(true).Key);
                         break;
                     case "blah":
                         Console.WriteLine("blah" + line[1]);
                         break;
                     case "debug_funcstack":
+                        Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine(string.Join("|", funcstack));
+                        Console.ResetColor();
+                        break;
+                    case "debug_variables":
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        foreach (KeyValuePair<string, object> entry in globaldict)
+                            Console.WriteLine(entry.Key + " : " + entry.Value.ToString());
+                        Console.ResetColor();
                         break;
                 }
                 return counter + 1;
