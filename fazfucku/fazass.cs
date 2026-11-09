@@ -7,7 +7,8 @@ namespace fazfucku
 {
     internal class fazassrunner
     {
-        public string[] lines;
+        private string[][] lines;
+        private int[] linenum;
         private Dictionary<string, object> globaldict = new Dictionary<string, object>();
         private int counter = 0;
         //static Dictionary<string, int> pointers = new Dictionary<string, int>();
@@ -16,13 +17,33 @@ namespace fazfucku
         private bool blankvar;
         public bool debug_runline = false;
         private float mathhalfrot = (float)Math.PI;
+        public void loadprogram(string[] prog)
+        {
+            List<string[]> processinglines = new List<string[]>();
+            List<int> processinglinenum = new List<int>();
+            foreach (string line in prog)
+            {
+                string[] split = line.Split('|'); //allovit
+                string[] values = new string[split.Length-1]; //actual function data
+                Array.ConstrainedCopy(split, 0, values, 0, split.Length - 1); //copies them all except the original line number
+                processinglinenum.Add(int.Parse(split[split.Length - 1])); //store original line number
+                for (int i = 0; i < values.Length; i++)
+                {
+                    if (values[i].StartsWith("\""))
+                        values[i] = values[i].Replace("\\n", "\n").Replace("\\p", "|").Replace("\\b", "\\");
+                }
+                processinglines.Add(values);
+            }
+            lines = processinglines.ToArray();
+            linenum = processinglinenum.ToArray();
+        }
         public void run()
         {
             while(counter != -1)
             {
                 if (debug_runline)
-                    debugline(lines[counter]);
-                counter = runline(lines[counter].Split('¦'));
+                    debugline(string.Join(" ", lines[counter]));
+                counter = runline(lines[counter]);
             }
         }
         private int runline(string[] line)
@@ -143,6 +164,24 @@ namespace fazfucku
                                             result = num;
                                     }
                                     break;
+                                case "c+":
+                                    result = num1;
+                                    for (int i = 4; i < line.Length; i++)
+                                        result += (float)getvar(line[i]);
+                                    break;
+                                case "c×":
+                                    result = num1;
+                                    for (int i = 4; i < line.Length; i++)
+                                        result *= (float)getvar(line[i]);
+                                    break;
+                                case "sa":
+                                    result = num1 * num1;
+                                    for (int i = 4; i < line.Length; i++)
+                                    {
+                                        float num = (float)getvar(line[i]);
+                                        result += num * num;
+                                    }
+                                    break;
                             }
                             setvar(line[1], result);
                         }
@@ -216,6 +255,21 @@ namespace fazfucku
                                     break;
                                 case "_": //log
                                     result = (float)Math.Log(num1, num2);
+                                    break;
+                            }
+                            setvar(line[1], result);
+                        }
+                        break;
+                    case "m3": //math 3
+                        {
+                            float result = float.NaN;
+                            float num1 = (float)getvar(line[3]);
+                            float num2 = (float)getvar(line[4]);
+                            float num3 = (float)getvar(line[5]);
+                            switch (line[2])
+                            {
+                                case "lf":
+                                    result = num1 * num2 + num2;
                                     break;
                             }
                             setvar(line[1], result);
@@ -315,6 +369,49 @@ namespace fazfucku
                                 result += (string)getvar(line[i]);
                             setvar(line[1], result);
                         }
+                        break;
+                    case "str_len": //string_length
+                        setvar(line[1], ((string)getvar(line[2])).Length);
+                        break;
+
+                    //list functions
+                    case "l_cr": //list_create
+                        setvar(line[1], new List<object>());
+                        break;
+                    case "l_at": //list_addtop
+                        ((List<object>)getvar(line[1])).Add(getvar(line[2]));
+                        break;
+                    case "l_aa": //list_addat
+                        ((List<object>)getvar(line[1])).Insert((int)getvar(line[3]), getvar(line[2]));
+                        break;
+                    case "l_s": //list_set
+                        ((List<object>)getvar(line[1]))[(int)getvar(line[3])] = getvar(line[2]);
+                        break;
+                    case "l_g": //list_get
+                        setvar(line[1], ((List<object>)getvar(line[2]))[(int)getvar(line[3])]);
+                        break;
+                    case "l_am": //list_amount
+                        setvar(line[1], ((List<object>)getvar(line[2])).Count - (float)getvar(line[3]));
+                        break;
+                    case "l_rf": //list_removefirst
+                        ((List<object>)getvar(line[1])).Remove(getvar(line[2]));
+                        break;
+                    case "l_ra": //list_removeat
+                        ((List<object>)getvar(line[1])).RemoveAt((int)getvar(line[2]));
+                        break;
+                    case "l_rl": //list_removeallof
+                        object checkthing = getvar(line[2]);
+                        Predicate<object> isthing = the => the.Equals(checkthing);
+                        ((List<object>)getvar(line[1])).RemoveAll(isthing);
+                        break;
+                    case "l_cl": //list_clear
+                        ((List<object>)getvar(line[1])).Clear();
+                        break;
+                    case "l_i": //list_indexof
+                        setvar(line[1], ((List<object>)getvar(line[2])).IndexOf(getvar(line[3])));
+                        break;
+                    case "l_h": //list_has
+                        setvar(line[1], ((List<object>)getvar(line[2])).Contains(getvar(line[3])));
                         break;
 
                     //COMSOEL?!
@@ -435,7 +532,7 @@ namespace fazfucku
             if (linenumber == -8008135)
                 linenumber = counter;
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(linenumber + ": " + err);
+            Console.WriteLine(linenum[linenumber] + " (" + linenumber + "): " + err);
             Console.ResetColor();
         }
         static void debugline(string text)

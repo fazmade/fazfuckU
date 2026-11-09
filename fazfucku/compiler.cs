@@ -161,15 +161,14 @@ namespace fazfucku
                     case lextype.stringe:
                         if (prevchar == '\\')
                         {
-                            if (curchar == '\"' || curchar == '\\' || curchar == '»')
-                                workingtoken += curchar;
-                            else if (curchar == 'n')
+                            if (curchar == 'n')
                                 workingtoken += '\n';
-                            else
-                            {
+                            else if (curchar == 'p')
+                                workingtoken += '|';
+                            else if (curchar == 'b')
                                 workingtoken += '\\';
+                            else
                                 workingtoken += curchar;
-                            }
                         }
                         else if (curchar == '\\') { } //NOTHING HAPPENS
                         else if (curchar == '\"' || curchar == '»')
@@ -346,7 +345,7 @@ namespace fazfucku
             for (int i = 0; i < toparse.Length; i++)
             {
                 char curchar = toparse[i];
-                if (curchar == '+' || curchar == '-' || curchar == '×' || curchar == '÷' || curchar == '%' || curchar == '^' || curchar == '@')
+                if (curchar == '+' || curchar == '-' || curchar == '×' || curchar == '÷' || curchar == '%' || curchar == '^' || curchar == '_')
                 {
                     peepees.Add(curp);
                     peepees.Add(curchar.ToString());
@@ -581,6 +580,10 @@ namespace fazfucku
                         if (float.TryParse(token.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out _))
                             lines[i].pieces[j] = "#" + token.Replace(',', '.');
                     }
+                    else if (token.StartsWith("\""))
+                    {
+                        lines[i].pieces[j] = token.Replace("\n", "\\n").Replace("|", "\\p").Replace("\\", "\\b");
+                    }
                 }
             }
         }
@@ -618,7 +621,20 @@ namespace fazfucku
             { "string_upper", "str_up" },
             { "string_substring", "str_sub" },
             { "string_split", "str_spl" },
-            { "string_join", "str_joe" }
+            { "string_join", "str_joe" },
+            { "string_length", "str_len" },
+            { "list_create", "l_cr" },
+            { "list_addtop", "l_at" },
+            { "list_addat", "l_aa" },
+            { "list_set", "l_s" },
+            { "list_get", "l_g" },
+            { "list_amount", "l_am" },
+            { "list_removefirst", "l_rf" },
+            { "list_removeat", "l_ra" },
+            { "list_removeallof", "l_rl" },
+            { "list_clear", "l_cl" },
+            { "list_indexof", "l_i" },
+            { "list_has", "l_h" }
         };
         public Dictionary<string, string[]> mathfunc = new Dictionary<string, string[]>
         {
@@ -635,7 +651,13 @@ namespace fazfucku
             { "atan", new string[] { "mt", "at" } },
             { "sign", new string[] { "m1", "s" } },
             { "max", new string[] { "mx", "mx" } },
-            { "min", new string[] { "mx", "mn" } }
+            { "min", new string[] { "mx", "mn" } },
+            { "axb", new string[] { "m3", "lf" } },
+            { "sqrt", new string[] { "m1", "sq" } },
+            { "√", new string[] { "m1", "sq" } },
+            { "cadd", new string[] { "mx", "c+" } },
+            { "cmul", new string[] { "mx", "c×" } },
+            { "sqradd", new string[] { "mx", "sa" } }
         };
         void makeshort()
         {
@@ -665,9 +687,9 @@ namespace fazfucku
             foreach (lineinfo lijn in lines)
             {
                 if (addmarkers && lijn.markers.Count > 0)
-                    thebuilder.AppendLine(string.Join("¦", lijn.pieces) + "<" + string.Join("<", lijn.markers));
+                    thebuilder.AppendLine(string.Join("|", lijn.pieces) + "<" + string.Join("<", lijn.markers) + "|" + lijn.originallineid);
                 else
-                    thebuilder.AppendLine(string.Join("¦", lijn.pieces));
+                    thebuilder.AppendLine(string.Join("|", lijn.pieces) + "|" + lijn.originallineid);
             }
             return thebuilder.ToString();
         }
