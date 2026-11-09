@@ -1,6 +1,6 @@
 print("spell icup")
 answer=console_getline()
-while (answer≠"ICUP")
+while ⟨answer≠"ICUP"⟩
 {
 	print("WRONG. try again")
 	answer=console_getline()
