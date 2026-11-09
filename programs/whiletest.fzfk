@@ -4,10 +4,12 @@ while ⟨answer≠"ICUP"⟩
 {
 	print("WRONG. try again")
 	answer=console_getline()
+	retry You shall
 }
 otherwise
 {
 	print("first try idiot!")
 }
 print("you did it!")
-release
+WATER BUCKET...
+release;!!!
