@@ -1,8 +1,0 @@
-cons_getline¦input
-comp¦B¦input¦=¦"1
-cdg¦6
-print¦"1
-cons_checkesc
-goto¦3
-print¦"1
-end

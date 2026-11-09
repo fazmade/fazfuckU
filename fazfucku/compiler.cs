@@ -604,6 +604,7 @@ namespace fazfucku
         public Dictionary<string, string> shorthand = new Dictionary<string, string>
         {
             { "print", "pr" },
+            { "release", "rel" },
             { "goto", "go" },
             { "conddontgoto", "cdg" },
             { "conddogoto", "cdog" },

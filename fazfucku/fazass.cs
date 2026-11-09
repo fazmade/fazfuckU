@@ -55,7 +55,7 @@ namespace fazfucku
                     case "pr":
                         Console.WriteLine(getvar(line[1]));
                         break;
-                    case "end":
+                    case "rel":
                         return -1;
                     case "go":
                         return int.Parse(line[1]);
