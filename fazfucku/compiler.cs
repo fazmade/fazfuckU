@@ -87,7 +87,7 @@ namespace fazfucku
         enum lextype { defauld, stringe, logicalic }
         void initiallexer()
         {
-            workingline = new lineinfo(-1);
+            workingline = new lineinfo(0);
             workingtoken = string.Empty;
             curlextype = lextype.defauld;
             char prevchar = '\0';
@@ -346,13 +346,13 @@ namespace fazfucku
                             switch(lines[i].pieces[0])
                             {
                                 case "if":
-                                    lines.Insert(i+2, new lineinfo(lines[i].originallineid, linetype.function, parsecond(lines[i].pieces[1], "B")));
+                                    lines.Insert(i+2, new lineinfo(lines[i].originallineid, linetype.function, parsecond(lines[i].pieces[2], "B")));
                                     lines.Insert(i+3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "conddont_next", "0" }));
                                     lines.Insert(skipindentation(i + 1, 0), new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
                                     lines[i].pieces = new List<string> { "section" };
                                     break;
                                 case "elif":
-                                    lines.Insert(i + 2, new lineinfo(lines[i].originallineid, linetype.function, parsecond(lines[i].pieces[1], "B")));
+                                    lines.Insert(i + 2, new lineinfo(lines[i].originallineid, linetype.function, parsecond(lines[i].pieces[2], "B")));
                                     lines.Insert(i + 3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "conddont_next", "0" }));
                                     lines.Insert(skipindentation(i + 1, 0), new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
                                     lines[i].pieces = new List<string> { "connection" };
@@ -362,7 +362,7 @@ namespace fazfucku
                                     lines[i].pieces = new List<string> { "connection" };
                                     break;
                                 case "while":
-                                    List<string> conditioncheck = parsecond(lines[i].pieces[1], "B");
+                                    List<string> conditioncheck = parsecond(lines[i].pieces[2], "B");
                                     int origid = lines[i].originallineid;
                                     lines.Insert(i + 2, new lineinfo(origid, linetype.function, conditioncheck));
                                     lines.Insert(i + 3, new lineinfo(origid, linetype.function, new List<string> { "conddont_end", "0" }));
@@ -377,9 +377,13 @@ namespace fazfucku
                                     break;
                             }
                         }
+                        else if (lines[i].pieces[0] == "comp")
+                        {
+                            lines[i].pieces = parsecond(lines[i].pieces[2], "B");
+                        }
                         else
                         {
-                            lines.Insert(i, new lineinfo(lines[i].originallineid, linetype.fazfuck, parsecond(lines[i].pieces[1], "B")));
+                            lines.Insert(i, new lineinfo(lines[i].originallineid, linetype.fazfuck, parsecond(lines[i].pieces[2], "B")));
                             i++;
                             lines[i].pieces.RemoveRange(1, lines[i].pieces.Count - 1);
                         }
@@ -576,12 +580,13 @@ namespace fazfucku
                 {
                     if (lines[i].pieces[0] == "section")
                     {
+                        removeline(i);
                         lines[i].markers.Add(new marker(markertype.start, indentation));
                         bool weredonehere = true;
                         int checkers = i;
                         while(weredonehere)
                         {
-                            checkers = skipindentation(checkers + 1, 0) + 1;
+                            checkers = skipindentation(checkers, 0) + 1;
                             if (lines[checkers].pieces[0] == "connection")
                             {
                                 removeline(checkers);
@@ -603,7 +608,7 @@ namespace fazfucku
                     {
                         int offset = 0;
                         if (lines[i].type == linetype.function)
-                            offset = int.Parse(lines[i].pieces[1]);
+                            offset += int.Parse(lines[i].pieces[1]);
                         lines[i].pieces = new List<string> { controlgotoes[lines[i].pieces[0]][0], controlgotoes[lines[i].pieces[0]][1] + (indentation - offset) };
                     }
                 }
@@ -706,7 +711,7 @@ namespace fazfucku
         int searchmarker(int startline, markertype tipee, int idee, int direction)
         {
             int curline = startline;
-            while(curline != 0 && curline != lines.Count)
+            while(curline != 0 && curline != lines.Count-1)
             {
                 curline += direction;
                 if (lines[curline].hasmarker(tipee, idee))
@@ -714,6 +719,7 @@ namespace fazfucku
                 else if (tipee == markertype.next && lines[curline].hasmarker(markertype.end, idee))
                     return curline;
             }
+            Console.WriteLine("compiler: sreahcing markier error!!! startline:" + startline + " markertype:" + tipee + " id:" + idee + " direcc:" + direction);
             return startline;
         }
         //replace longer function names
@@ -809,7 +815,7 @@ namespace fazfucku
                 else
                     thebuilder.AppendLine(string.Join("|", lijn.pieces) + "|" + lijn.originallineid);
             }
-            return thebuilder.ToString();
+            return thebuilder.ToString().TrimEnd('\n').TrimEnd('\r');
         }
     }
     class lineinfo
