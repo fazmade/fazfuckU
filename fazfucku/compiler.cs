@@ -346,7 +346,33 @@ namespace fazfucku
                             switch(lines[i].pieces[0])
                             {
                                 case "if":
-                                    lines.Insert(i+2, new lineinfo(lines[i].originallineid, linetype.fazfuck, parsecond(lines[i].pieces[1], "B")));
+                                    lines.Insert(i+2, new lineinfo(lines[i].originallineid, linetype.function, parsecond(lines[i].pieces[1], "B")));
+                                    lines.Insert(i+3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "conddont_next", "0" }));
+                                    lines.Insert(skipindentation(i + 1, 0), new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
+                                    lines[i].pieces = new List<string> { "section" };
+                                    break;
+                                case "elif":
+                                    lines.Insert(i + 2, new lineinfo(lines[i].originallineid, linetype.function, parsecond(lines[i].pieces[1], "B")));
+                                    lines.Insert(i + 3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "conddont_next", "0" }));
+                                    lines.Insert(skipindentation(i + 1, 0), new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
+                                    lines[i].pieces = new List<string> { "connection" };
+                                    break;
+                                case "else":
+                                case "otherwise":
+                                    lines[i].pieces = new List<string> { "connection" };
+                                    break;
+                                case "while":
+                                    List<string> conditioncheck = parsecond(lines[i].pieces[1], "B");
+                                    int origid = lines[i].originallineid;
+                                    lines.Insert(i + 2, new lineinfo(origid, linetype.function, conditioncheck));
+                                    lines.Insert(i + 3, new lineinfo(origid, linetype.function, new List<string> { "conddont_end", "0" }));
+                                    int skap = skipindentation(i + 1, 0);
+                                    lines.Insert(skap, new lineinfo(origid, linetype.standalone, new List<string> { "retry" }));
+                                    if (lines[skap+1].pieces[0] == "otherwise")
+                                    {
+                                        lines.Insert(i, new lineinfo(origid, linetype.function, conditioncheck));
+                                        lines.Insert(i + 3, new lineinfo(origid, linetype.function, new List<string> { "conddo_next", "-1" })); //the next flag would be on the otherwise connection; add offset of minus one since we're not in that indent yet
+                                    }
                                     lines[i].pieces = new List<string> { "section" };
                                     break;
                             }
@@ -355,7 +381,7 @@ namespace fazfucku
                         {
                             lines.Insert(i, new lineinfo(lines[i].originallineid, linetype.fazfuck, parsecond(lines[i].pieces[1], "B")));
                             i++;
-                            lines[i].pieces.RemoveRange(i, lines[i].pieces.Count - 1);
+                            lines[i].pieces.RemoveRange(1, lines[i].pieces.Count - 1);
                         }
                         break;
                 }
@@ -571,11 +597,14 @@ namespace fazfucku
                     else if (lines[i].pieces[0] == "}")
                         indentation--;
                 }
-                else if (lines[i].type == linetype.function)
+                else if (lines[i].type == linetype.function || lines[i].type == linetype.standalone)
                 {
                     if (controlgotoes.ContainsKey(lines[i].pieces[0]))
                     {
-                        lines[i].pieces = new List<string> { controlgotoes[lines[i].pieces[0]][0], controlgotoes[lines[i].pieces[0]][1] + indentation };
+                        int offset = 0;
+                        if (lines[i].type == linetype.function)
+                            offset = int.Parse(lines[i].pieces[1]);
+                        lines[i].pieces = new List<string> { controlgotoes[lines[i].pieces[0]][0], controlgotoes[lines[i].pieces[0]][1] + (indentation - offset) };
                     }
                 }
             }
@@ -630,7 +659,11 @@ namespace fazfucku
                 for (int j = 0; j < lines[i].pieces.Count; j++)
                 {
                     string token = lines[i].pieces[j];
-                    if (token.StartsWith("@"))
+                    if (token == "true")
+                        lines[i].pieces[j] = "T";
+                    else if (token == "false")
+                        lines[i].pieces[j] = "F";
+                    else if (token.StartsWith("@"))
                     {
                         if (token.StartsWith("@+"))
                         {
