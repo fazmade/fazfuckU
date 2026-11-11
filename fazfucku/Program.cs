@@ -11,7 +11,6 @@ namespace fazfucku
         static void Main(string[] args)
         {
             bool gobromytoelo = true;
-            bool runwithdebug = false;
             while (gobromytoelo)
             {
                 Console.Write("inpoot:");
@@ -32,17 +31,22 @@ namespace fazfucku
                         else
                         {
                             fazassrunner myassisblicky = new fazassrunner();
-                            myassisblicky.lines = File.ReadAllLines(filelocation);
-                            myassisblicky.debug_runline = runwithdebug;
+                            myassisblicky.loadprogram(File.ReadAllLines(filelocation));
+                            if (input.Length > 1)
+                            {
+                                for (int i = 1; i < input.Length; i++)
+                                {
+                                    switch (input[i])
+                                    {
+                                        case "runwithdebug":
+                                        case "ruwd":
+                                            myassisblicky.debug_runline = true;
+                                            break;
+                                    }
+                                }
+                            }
                             myassisblicky.run();
                         }
-                        break;
-                    case "togglerundebug":
-                        runwithdebug = !runwithdebug;
-                        if (runwithdebug)
-                            Console.WriteLine("running with debug");
-                        else
-                            Console.WriteLine("not running with debug");
                         break;
                     case "compile":
                         if (filelocation == string.Empty)
