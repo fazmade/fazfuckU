@@ -81,13 +81,13 @@ namespace fazfucku
             if (workingline.pieces.Count != 0)
             {
                 lines.Add(workingline);
-                workingline = new lineinfo();
+                workingline = new lineinfo(-1);
             }
         }
         enum lextype { defauld, stringe, logicalic }
         void initiallexer()
         {
-            workingline = new lineinfo();
+            workingline = new lineinfo(-1);
             workingtoken = string.Empty;
             curlextype = lextype.defauld;
             char prevchar = '\0';
@@ -202,6 +202,17 @@ namespace fazfucku
             popline();
         }
         //line detection
+        string[] blockfunctions = new string[]
+        {
+            "if",
+            "elif",
+            "else",
+            "while",
+            "otherwise",
+            "section",
+            "connection",
+            "for",
+        };
         void linedetector()
         {
             for (int i = 0; i < lines.Count; i++)
@@ -210,18 +221,12 @@ namespace fazfucku
                 lines[i].type = ligmaballs;
                 if (ligmaballs == linetype.broken)
                     doerror("cannot get the type of line for " + lines[i].originallineid + " (" + i + ")!");
-                else if (ligmaballs == linetype.controlfunction || (ligmaballs == linetype.standalone && (lines[i].pieces[0] == "else" || lines[i].pieces[0] == "otherwise")))
+                else if (blockfunctions.Contains(lines[i].pieces[0]))
                 {
                     if (lines[i+1].pieces[0] != "{")
                     {
-                        lineinfo newline = new lineinfo();
-                        newline.pieces.Add("{");
-                        newline.originallineid = lines[i].originallineid;
-                        lines.Insert(i + 1, newline);
-                        newline = new lineinfo();
-                        newline.pieces.Add("}");
-                        newline.originallineid = lines[i].originallineid;
-                        lines.Insert(i + 3, newline);
+                        lines.Insert(i + 1, new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "{" }));
+                        lines.Insert(i + 3, new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "}" }));
                     }
                 }
                 //Console.WriteLine(ligmaballs.ToString());
@@ -285,7 +290,7 @@ namespace fazfucku
                         lines[i].pieces.Remove("[");
                         lines[i].pieces.Remove("]");
                         lines[i].pieces.RemoveAll(commaer);
-                        lines[i].type = linetype.fazfuck;
+                        //lines[i].type = linetype.fazfuck;
                         break;
                     case linetype.functionset:
                         {
@@ -298,7 +303,7 @@ namespace fazfucku
                             lines[i].pieces.Remove("[");
                             lines[i].pieces.Remove("]");
                             lines[i].pieces.InsertRange(1, setvar); //add back setvar
-                            lines[i].type = linetype.fazfuck;
+                            //lines[i].type = linetype.fazfuck;
                         }
                         break;
                     case linetype.math:
@@ -309,7 +314,7 @@ namespace fazfucku
                             lines[i].pieces.Remove(")");
                             parsemath(string.Join("", lines[i].pieces), out string num1, out string oper, out string num2);
                             lines[i].pieces = new List<string> { "math", setvar, oper, num1, num2 };
-                            lines[i].type = linetype.fazfuck;
+                            //lines[i].type = linetype.fazfuck;
                         }
                         break;
                     case linetype.mathdirect:
@@ -318,22 +323,40 @@ namespace fazfucku
                             lines[i].pieces.Remove(")");
                             parsemath(string.Join("", lines[i].pieces), out string num1, out string oper, out string num2);
                             lines[i].pieces = new List<string> { "math", num1, oper, num1, num2 };
-                            lines[i].type = linetype.fazfuck;
+                            //lines[i].type = linetype.fazfuck;
                         }
                         break;
                     case linetype.set:
                         {
                             lines[i].pieces = new List<string> { "set", lines[i].pieces[0], lines[i].pieces[2] };
-                            lines[i].type = linetype.fazfuck;
+                            //lines[i].type = linetype.fazfuck;
                         }
                         break;
                     case linetype.booldirect:
                         lines[i].pieces = parsecond(lines[i].pieces[1], "");
-                        lines[i].type = linetype.fazfuck;
+                        //lines[i].type = linetype.fazfuck;
                         break;
                     case linetype.boel:
                         lines[i].pieces = parsecond(lines[i].pieces[3], lines[i].pieces[0]);
-                        lines[i].type = linetype.fazfuck;
+                        //lines[i].type = linetype.fazfuck;
+                        break;
+                    case linetype.controlfunction:
+                        if (blockfunctions.Contains(lines[i].pieces[0]))
+                        {
+                            switch(lines[i].pieces[0])
+                            {
+                                case "if":
+                                    lines.Insert(i+2, new lineinfo(lines[i].originallineid, linetype.fazfuck, parsecond(lines[i].pieces[1], "B")));
+                                    lines[i].pieces = new List<string> { "section" };
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            lines.Insert(i, new lineinfo(lines[i].originallineid, linetype.fazfuck, parsecond(lines[i].pieces[1], "B")));
+                            i++;
+                            lines[i].pieces.RemoveRange(i, lines[i].pieces.Count - 1);
+                        }
                         break;
                 }
             }
@@ -405,7 +428,16 @@ namespace fazfucku
             if (toparse.Contains(" "))
             {
                 string[] splitty = toparse.Split(' ');
-                if (splitty.Contains("contains") || splitty.Contains("!contains") || splitty.Contains("startswith") || splitty.Contains("!startswith") || splitty.Contains("endswith") || splitty.Contains("!endswith"))
+                bool has = false;
+                foreach (string jumbojosh in specialcomparisons.Keys)
+                {
+                    if (splitty.Contains(jumbojosh))
+                    {
+                        has = true;
+                        break;
+                    }
+                }
+                if (has)
                 {
                     List<string> daline = new List<string> { "comp", outputvar, "", "", "" };
                     int piecey = 2;
@@ -446,7 +478,7 @@ namespace fazfucku
                 return new List<string> { "comp", outputvar, isalisteventhebestchoiceforthis[0], isalisteventhebestchoiceforthis[1], isalisteventhebestchoiceforthis[2] };
         }
         //control flow conversion
-        void gototime()
+        /*void gototime()
         {
             int loopid = 0;
             for (int i = 0; i < lines.Count; i++)
@@ -496,6 +528,57 @@ namespace fazfucku
                     //add while
                 }
             }
+        }*/
+        public Dictionary<string, string[]> controlgotoes = new Dictionary<string, string[]>
+        {
+            { "retry", new string[] { "goto", "@start" } },
+            { "next", new string[] { "goto", "@next" } },
+            { "end", new string[] { "goto", "@end" } },
+            { "conddont_retry", new string[] { "condontgoto", "@start" } },
+            { "conddont_next", new string[] { "condontgoto", "@next" } },
+            { "conddont_end", new string[] { "condontgoto", "@end" } },
+            { "conddo_retry", new string[] { "condogoto", "@start" } },
+            { "conddo_next", new string[] { "condogoto", "@next" } },
+            { "conddo_end", new string[] { "condogoto", "@end" } }
+        };
+        void gototime()
+        {
+            int indentation = 0;
+            for (int i = 0; i < lines.Count; i++)
+            {
+                if (lines[i].type == linetype.standalone)
+                {
+                    if (lines[i].pieces[0] == "section")
+                    {
+                        lines[i].markers.Add(new marker(markertype.start, indentation));
+                        bool weredonehere = true;
+                        int checkers = i;
+                        while(weredonehere)
+                        {
+                            checkers = skipindentation(checkers + 1, 0) + 1;
+                            if (lines[checkers].pieces[0] == "connection")
+                            {
+                                removeline(checkers);
+                                lines[checkers].markers.Add(new marker(markertype.next, indentation));
+                            }
+                            else
+                                weredonehere = false;
+                        }
+                        lines[checkers].markers.Add(new marker(markertype.end, indentation));
+                    }
+                    else if (lines[i].pieces[0] == "{")
+                        indentation++;
+                    else if (lines[i].pieces[0] == "}")
+                        indentation--;
+                }
+                else if (lines[i].type == linetype.function)
+                {
+                    if (controlgotoes.ContainsKey(lines[i].pieces[0]))
+                    {
+                        lines[i].pieces = new List<string> { controlgotoes[lines[i].pieces[0]][0], controlgotoes[lines[i].pieces[0]][1] + indentation };
+                    }
+                }
+            }
         }
         int skipindentation(int start, int offset)
         {
@@ -513,6 +596,17 @@ namespace fazfucku
             doerror("cannot skip indentation with an offset of " + offset + " starting at" + lines[start].originallineid + " (" + start + ")!");
             return start;
         }
+        void removeline(int index)
+        {
+            if (lines[index].markers.Count > 0)
+            {
+                List<marker> markys = lines[index].markers;
+                lines.RemoveAt(index);
+                lines[index].markers.AddRange(markys);
+            }
+            else
+                lines.RemoveAt(index);
+        }
         //remove brackets
         void removebrackets()
         {
@@ -527,17 +621,6 @@ namespace fazfucku
                     }
                 }
             }
-        }
-        void removeline(int index)
-        {
-            if (lines[index].markers.Count > 0)
-            {
-                List<marker> markys = lines[index].markers;
-                lines.RemoveAt(index);
-                lines[index].markers.AddRange(markys);
-            }
-            else
-                lines.RemoveAt(index);
         }
         //convert from dynamic
         void convertfromdynamic()
@@ -607,6 +690,7 @@ namespace fazfucku
             { "release", "rel" },
             { "goto", "go" },
             { "conddontgoto", "cdg" },
+            { "condsplitgoto", "csg" },
             { "conddogoto", "cdog" },
             { "comp", "c" },
             { "set", "s" },
@@ -711,6 +795,16 @@ namespace fazfucku
                     return true;
             }
             return false;
+        }
+        public lineinfo(int originalline)
+        {
+            originallineid = originalline;
+        }
+        public lineinfo(int originalline, linetype lintip, List<string> pcs)
+        {
+            originallineid = originalline;
+            pieces = pcs;
+            type = lintip;
         }
     }
     class marker

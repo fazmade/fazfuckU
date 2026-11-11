@@ -1,0 +1,22 @@
+print("1 = initial if, 2 = elif, else")
+inp=console_getline()
+section
+{
+	comp⟨inp = "1"⟩
+	conddont_next(0)
+	print("if statement")
+	end
+}
+connection
+{
+	comp⟨inp = "2"⟩
+	conddont_next(0)
+	print("elif statement")
+	end
+}
+connection
+{
+	print("else statement")
+}
+print("da end")
+release
