@@ -1,3 +1,4 @@
+flags
 supports_arbitrary_parameter_counts supports_lists
 
 hooks

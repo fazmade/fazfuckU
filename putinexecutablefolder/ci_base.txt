@@ -1,0 +1,80 @@
+flags
+
+hooks
+
+function shorthands
+print pr
+release rel
+goto go
+conddontgoto cdg
+condsplitgoto csg
+conddogoto cdog
+comp c
+set s
+undef ud
+fstk_add fa
+fstk_discard fd
+fstk_popgoto fg
+fstk_pop fp
+to_string tstr
+parse prs
+string_replace str_rep
+string_lower str_lw
+string_upper str_up
+string_substring str_sub
+string_split str_spl
+string_join str_joe
+string_length str_len
+list_create l_cr
+list_addtop l_at
+list_addat l_aa
+list_set l_s
+list_get l_g
+list_amount l_am
+list_removefirst l_rf
+list_removeat l_ra
+list_removeallof l_rl
+list_clear l_cl
+list_indexof l_i
+list_has l_h
+
+math functions
+round m2 rn
+floor m2 fl
+flr m2 fl
+ceiling m2 cl
+ceil m2 cl
+sin mt s
+cos mt c
+tan mt t
+asin mt as
+acos mt ac
+atan mt at
+sign m1 s
+max mx mx
+min mx mn
+axb m3 lf
+sqrt m1 sq
+√ m1 sq
+cadd mx c+
+cmul mx c×
+sqradd mx sa
+
+special comparisons
+contains c
+!contains !c
+startswith s
+!startswith !s
+endswith e
+!endswith !e
+
+control gotoes
+restart goto @start
+next goto @next
+end goto @end
+restart_unless conddontgoto @start
+next_unless conddontgoto @next
+end_unless conddontgoto @end
+restart_if conddogoto @start
+next_if conddogoto @next
+end_if conddogoto @end

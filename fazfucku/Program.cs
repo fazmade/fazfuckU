@@ -8,6 +8,7 @@ namespace fazfucku
     {
         static string filelocation;
         static string compileinfofile = string.Empty;
+        static bool soundic = true;
         static void Main(string[] args)
         {
             bool gobromytoelo = true;
@@ -25,9 +26,15 @@ namespace fazfucku
                         break;
                     case "runsingle":
                         if (filelocation == string.Empty)
+                        {
+                            funnywindowssound(soundeffect.error);
                             Console.WriteLine("no file location set!");
+                        }
                         else if (!File.Exists(filelocation))
+                        {
+                            funnywindowssound(soundeffect.error);
                             Console.WriteLine(filelocation + " doesn't exist!");
+                        }
                         else
                         {
                             fazassrunner myassisblicky = new fazassrunner();
@@ -105,13 +112,13 @@ namespace fazfucku
                                     File.Create(compiledplace).Dispose();
                                 File.WriteAllText(compiledplace, thecompiled);
                                 Console.WriteLine("compild!");
-                                funnywindowssound("tada.wav"); //it's the best part of the vs build process bro!
+                                funnywindowssound(soundeffect.win); //it's the best part of the vs build process bro!
                                 break;
                             }
                             else
                                 Console.WriteLine("compiled file was empty!!");
                         }
-                        funnywindowssound("Windows Error.wav");
+                        funnywindowssound(soundeffect.bigerrorbro);
                         break;
                     case "compileinfo":
                         try
@@ -143,7 +150,10 @@ namespace fazfucku
                                         Console.WriteLine("now using " + input[1] + " (" + compileinfofile + ")");
                                     }
                                     else
+                                    {
                                         Console.WriteLine("invalid compile info! (" + location + ")");
+                                        funnywindowssound(soundeffect.error);
+                                    }
                                 }
                             }
                         }
@@ -156,16 +166,41 @@ namespace fazfucku
                         if (File.Exists(input[0]))
                             filelocation = input[0];
                         else
+                        {
                             Console.WriteLine("WAT");
+                            funnywindowssound(soundeffect.error);
+                        }
                         break;
                 }
             }
-            void funnywindowssound(string sound)
+        }
+        public enum soundeffect
+        {
+            win,
+            error,
+            bigerrorbro
+        }
+        public static void funnywindowssound(soundeffect sound)
+        {
+            if (!soundic)
+                return;
+            string soundname = "dshfhisakjhfiuwehrujmdsjkfghjopddbljkqwhfvshjstkashdfkjdfghjkyweh";
+            Random thats_rad_dude = new Random();
+            switch (sound)
             {
-                SoundPlayer simpleSound = new SoundPlayer(@"c:\Windows\Media\" + sound);
-                simpleSound.Play();
-                simpleSound.Dispose();
+                case soundeffect.win:
+                    soundname = "win.wav";
+                    break;
+                case soundeffect.error:
+                    soundname = new string[] { "baby_hurt1.wav", "baby_hurt2.wav", "baby_hurt3.wav", "dad_hurt1.wav", "dad_hurt2.wav", "dad_hurt3.wav" }[thats_rad_dude.Next(6)];
+                    break;
+                case soundeffect.bigerrorbro:
+                    soundname = new string[] { "baby_die.wav", "dad_die.wav" }[thats_rad_dude.Next(2)];
+                    break;
             }
+            SoundPlayer simpleSound = new SoundPlayer(Path.Combine(Directory.GetCurrentDirectory(), "sounds", soundname));
+            simpleSound.Play();
+            simpleSound.Dispose();
         }
     }
 }
