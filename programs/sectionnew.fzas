@@ -1,13 +1,13 @@
 pr|"1 = initial if, 2 = elif, else|0
 cons_gtline|inp|1
-c|B|inp|=|"1"|4
-condontgoto|6|5
-pr|"if statement|6
-end|7
-c|B|inp|=|"2"|11
-condontgoto|10|12
-pr|"elif statement|13
-end|14
-pr|"else statement|18
-pr|"da end|20
-rel|21
+c|B|inp|=|"1|4
+cdg|6|4
+pr|"if statement|5
+go|11|6
+c|B|inp|=|"2|10
+cdg|10|10
+pr|"elif statement|11
+go|11|12
+pr|"else statement|16
+pr|"da end|18
+rel|19

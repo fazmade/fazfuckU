@@ -1,0 +1,16 @@
+print("1 = initial if, 2 = elif, else")
+inp=console_getline()
+if⟨inp = "1"⟩
+{
+	print("if statement")
+}
+elif⟨inp = "2"⟩
+{
+	print("elif statement")
+}
+else
+{
+	print("else statement")
+}
+print("da end")
+release

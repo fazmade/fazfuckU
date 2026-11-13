@@ -26,16 +26,16 @@ namespace fazfucku
                 linedetector();
                 if (prematureoutput == 2)
                     return outputfile(false);
-                Console.WriteLine("compiler: main fazass conversion start");
-                mainfazassconvert();
+                Console.WriteLine("compiler: main conversion start");
+                mainconversion();
                 if (prematureoutput == 3)
                     return outputfile(false);
                 Console.WriteLine("compiler: convert control flow start");
                 gototime();
                 if (prematureoutput == 4)
                     return outputfile(true);
-                Console.WriteLine("compiler: remove brackets start");
-                removebrackets();
+                Console.WriteLine("compiler: remove old control start");
+                removeoldcontrol();
                 if (prematureoutput == 5)
                     return outputfile(true);
                 Console.WriteLine("compiler: convert from dynamic start");
@@ -60,8 +60,21 @@ namespace fazfucku
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("compiler: " + err);
             Console.ResetColor();
+            Program.funnywindowssound(Program.soundeffect.error);
         }
+        string[] blockfunctions = new string[]
+        {
+            "if",
+            "elif",
+            "else",
+            "while",
+            "otherwise",
+            "section",
+            "connection",
+            "for",
+        };
         //initial lexer
+        #region initial lexer
         lineinfo workingline;
         string workingtoken;
         int currentfileline;
@@ -201,18 +214,9 @@ namespace fazfucku
             }
             popline();
         }
+        #endregion
         //line detection
-        string[] blockfunctions = new string[]
-        {
-            "if",
-            "elif",
-            "else",
-            "while",
-            "otherwise",
-            "section",
-            "connection",
-            "for",
-        };
+        #region line detection
         void linedetector()
         {
             for (int i = 0; i < lines.Count; i++)
@@ -272,8 +276,10 @@ namespace fazfucku
             }
             return linetype.broken;
         }
+        #endregion
         //main fazass conversion
-        void mainfazassconvert()
+        #region main fazass conversion
+        void mainconversion()
         {
             Predicate<string> commaer = piec => piec == ","; //checks if it's a comma i think
             for (int i = 0; i < lines.Count; i++)
@@ -347,17 +353,21 @@ namespace fazfucku
                             {
                                 case "if":
                                     lines.Insert(i+2, new lineinfo(lines[i].originallineid, linetype.function, parsecond(lines[i].pieces[2], "B")));
-                                    lines.Insert(i+3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "conddont_next", "0" }));
-                                    lines.Insert(skipindentation(i + 1, 0), new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
+                                    lines.Insert(i+3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "next_unless", "0" }));
                                     lines[i].pieces = new List<string> { "section" };
                                     break;
                                 case "elif":
-                                    lines.Insert(i + 2, new lineinfo(lines[i].originallineid, linetype.function, parsecond(lines[i].pieces[2], "B")));
-                                    lines.Insert(i + 3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "conddont_next", "0" }));
-                                    lines.Insert(skipindentation(i + 1, 0), new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
+                                    lines.Insert(i+2, new lineinfo(lines[i].originallineid, linetype.function, parsecond(lines[i].pieces[2], "B")));
+                                    lines.Insert(i+3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "next_unless", "0" }));
                                     lines[i].pieces = new List<string> { "connection" };
+                                    lines.Insert(i-2, new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
+                                    i++;
                                     break;
                                 case "else":
+                                    lines[i].pieces = new List<string> { "connection" };
+                                    lines.Insert(i - 2, new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
+                                    i++;
+                                    break;
                                 case "otherwise":
                                     lines[i].pieces = new List<string> { "connection" };
                                     break;
@@ -365,23 +375,18 @@ namespace fazfucku
                                     List<string> conditioncheck = parsecond(lines[i].pieces[2], "B");
                                     int origid = lines[i].originallineid;
                                     lines.Insert(i + 2, new lineinfo(origid, linetype.function, conditioncheck));
-                                    lines.Insert(i + 3, new lineinfo(origid, linetype.function, new List<string> { "conddont_end", "0" }));
+                                    lines.Insert(i + 3, new lineinfo(origid, linetype.function, new List<string> { "end_unless", "0" }));
                                     int skap = skipindentation(i + 1, 0);
                                     lines.Insert(skap, new lineinfo(origid, linetype.standalone, new List<string> { "retry" }));
                                     if (lines[skap+1].pieces[0] == "otherwise")
                                     {
                                         lines.Insert(i, new lineinfo(origid, linetype.function, conditioncheck));
-                                        lines.Insert(i + 3, new lineinfo(origid, linetype.function, new List<string> { "conddo_next", "-1" })); //the next flag would be on the otherwise connection; add offset of minus one since we're not in that indent yet
+                                        lines.Insert(i + 3, new lineinfo(origid, linetype.function, new List<string> { "next_unless", "-1" })); //the next flag would be on the otherwise connection; add offset of minus one since we're not in that indent yet
                                     }
                                     lines[i].pieces = new List<string> { "section" };
                                     break;
                             }
                         }
-                        else if (lines[i].pieces[0] == "comp")
-                        {
-                            lines[i].pieces = parsecond(lines[i].pieces[2], "B");
-                        }
-                        else
                         {
                             lines.Insert(i, new lineinfo(lines[i].originallineid, linetype.fazfuck, parsecond(lines[i].pieces[2], "B")));
                             i++;
@@ -507,110 +512,51 @@ namespace fazfucku
             else
                 return new List<string> { "comp", outputvar, isalisteventhebestchoiceforthis[0], isalisteventhebestchoiceforthis[1], isalisteventhebestchoiceforthis[2] };
         }
+        #endregion
         //control flow conversion
-        /*void gototime()
-        {
-            int loopid = 0;
-            for (int i = 0; i < lines.Count; i++)
-            {
-                if (lines[i].type == linetype.controlfunction)
-                {
-                    if (lines[i].pieces[0] == "if")
-                    {
-                        lineinfo compline = new lineinfo();
-                        compline.pieces = parsecond(lines[i].pieces[2], "B");
-                        compline.originallineid = lines[i].originallineid;
-                        lines.Insert(i, compline);
-                        i++;
-                        lines[i].pieces = new List<string> { "conddontgoto", "@next" + loopid };
-                        bool wouwie = true;
-                        int checkers = i;
-                        while(wouwie)
-                        {
-                            checkers = skipindentation(checkers + 1, 0) + 1;
-                            if (lines[checkers].pieces[0] == "elif")
-                            {
-                                compline = new lineinfo();
-                                compline.pieces = new List<string> { "goto", "@end" + loopid };
-                                compline.originallineid = lines[checkers].originallineid;
-                                lines.Insert(checkers, compline);
-                                checkers++;
-                                compline = new lineinfo();
-                                compline.pieces = parsecond(lines[checkers].pieces[2], "B");
-                                compline.originallineid = lines[checkers].originallineid;
-                                lines.Insert(checkers, compline);
-                                lines[checkers].markers.Add(new marker(markertype.next, loopid));
-                                checkers++;
-                                lines[checkers].pieces = new List<string> { "conddontgoto", "@next" + loopid };
-                            }
-                            else if (lines[checkers].pieces[0] == "else")
-                            {
-                                lines[checkers].pieces = new List<string> { "goto", "@end" + loopid };
-                                //checkers++;
-                                lines[checkers+1].markers.Add(new marker(markertype.next, loopid));
-                            }
-                            else
-                                wouwie = false;
-                        }
-                        lines[checkers].markers.Add(new marker(markertype.end, loopid));
-                        loopid++;
-                    }
-                    //add while
-                }
-            }
-        }*/
+        #region this part makes me want to kill myself (:
         public Dictionary<string, string[]> controlgotoes = new Dictionary<string, string[]>
         {
-            { "retry", new string[] { "goto", "@start" } },
+            { "restart", new string[] { "goto", "@start" } },
             { "next", new string[] { "goto", "@next" } },
             { "end", new string[] { "goto", "@end" } },
-            { "conddont_retry", new string[] { "condontgoto", "@start" } },
-            { "conddont_next", new string[] { "condontgoto", "@next" } },
-            { "conddont_end", new string[] { "condontgoto", "@end" } },
-            { "conddo_retry", new string[] { "condogoto", "@start" } },
-            { "conddo_next", new string[] { "condogoto", "@next" } },
-            { "conddo_end", new string[] { "condogoto", "@end" } }
+            { "restart_unless", new string[] { "conddontgoto", "@start" } },
+            { "next_unless", new string[] { "conddontgoto", "@next" } },
+            { "end_unless", new string[] { "conddontgoto", "@end" } },
+            { "restart_if", new string[] { "conddogoto", "@start" } },
+            { "next_if", new string[] { "conddogoto", "@next" } },
+            { "end_if", new string[] { "conddogoto", "@end" } }
         };
         void gototime()
         {
             int indentation = 0;
             for (int i = 0; i < lines.Count; i++)
             {
-                if (lines[i].type == linetype.standalone)
+                if (lines[i].pieces[0] == "section")
                 {
-                    if (lines[i].pieces[0] == "section")
+                    lines[i].markers.Add(new marker(markertype.start, indentation));
+                    bool gomytoeloe = true;
+                    int checkers = i;
+                    while (gomytoeloe)
                     {
-                        removeline(i);
-                        lines[i].markers.Add(new marker(markertype.start, indentation));
-                        bool weredonehere = true;
-                        int checkers = i;
-                        while(weredonehere)
-                        {
-                            checkers = skipindentation(checkers, 0) + 1;
-                            if (lines[checkers].pieces[0] == "connection")
-                            {
-                                removeline(checkers);
-                                lines[checkers].markers.Add(new marker(markertype.next, indentation));
-                            }
-                            else
-                                weredonehere = false;
-                        }
-                        lines[checkers].markers.Add(new marker(markertype.end, indentation));
+                        checkers = skipindentation(checkers + 1, 0) + 1;
+                        if (lines[checkers].pieces[0] == "connection")
+                            lines[checkers].markers.Add(new marker(markertype.next, indentation));
+                        else
+                            gomytoeloe = false;
                     }
-                    else if (lines[i].pieces[0] == "{")
-                        indentation++;
-                    else if (lines[i].pieces[0] == "}")
-                        indentation--;
+                    lines[checkers].markers.Add(new marker(markertype.end, indentation));
                 }
-                else if (lines[i].type == linetype.function || lines[i].type == linetype.standalone)
+                else if (lines[i].pieces[0] == "{")
+                    indentation++;
+                else if (lines[i].pieces[0] == "}")
+                    indentation--;
+                else if (controlgotoes.ContainsKey(lines[i].pieces[0]))
                 {
-                    if (controlgotoes.ContainsKey(lines[i].pieces[0]))
-                    {
-                        int offset = 0;
-                        if (lines[i].type == linetype.function)
-                            offset += int.Parse(lines[i].pieces[1]);
-                        lines[i].pieces = new List<string> { controlgotoes[lines[i].pieces[0]][0], controlgotoes[lines[i].pieces[0]][1] + (indentation - offset) };
-                    }
+                    int offset = -1;
+                    if (lines[i].pieces.Count > 1)
+                        offset -= int.Parse(lines[i].pieces[1]);
+                    lines[i].pieces = new List<string> { controlgotoes[lines[i].pieces[0]][0], controlgotoes[lines[i].pieces[0]][1] + (indentation + offset) };
                 }
             }
         }
@@ -630,6 +576,20 @@ namespace fazfucku
             doerror("cannot skip indentation with an offset of " + offset + " starting at" + lines[start].originallineid + " (" + start + ")!");
             return start;
         }
+        #endregion
+        //remove old control
+        #region remove old control
+        void removeoldcontrol()
+        {
+            for (int i = 0; i < lines.Count; i++)
+            {
+                if (lines[i].pieces[0] == "{" || lines[i].pieces[0] == "}" || blockfunctions.Contains(lines[i].pieces[0]))
+                {
+                    removeline(i);
+                    i--;
+                }
+            }
+        }
         void removeline(int index)
         {
             if (lines[index].markers.Count > 0)
@@ -641,22 +601,9 @@ namespace fazfucku
             else
                 lines.RemoveAt(index);
         }
-        //remove brackets
-        void removebrackets()
-        {
-            for (int i = 0; i < lines.Count; i++)
-            {
-                if (lines[i].type == linetype.standalone)
-                {
-                    if (lines[i].pieces[0] == "{" || lines[i].pieces[0] == "}")
-                    {
-                        removeline(i);
-                        i--;
-                    }
-                }
-            }
-        }
+        #endregion
         //convert from dynamic
+        #region convert from dynamic
         void convertfromdynamic()
         {
             for (int i = 0; i < lines.Count; i++)
@@ -722,7 +669,9 @@ namespace fazfucku
             Console.WriteLine("compiler: sreahcing markier error!!! startline:" + startline + " markertype:" + tipee + " id:" + idee + " direcc:" + direction);
             return startline;
         }
+        #endregion
         //replace longer function names
+        #region he shortening
         public Dictionary<string, string> shorthand = new Dictionary<string, string>
         {
             { "print", "pr" },
@@ -789,12 +738,7 @@ namespace fazfucku
             {
                 string functio = lines[i].pieces[0];
                 if (functio == "math")
-                {
-                    if (lines[i].pieces[2] == "mx" || lines[i].pieces[2] == "mn")
-                        lines[i].pieces[0] = "mx";
-                    else
-                        lines[i].pieces[0] = "m" + (lines[i].pieces.Count - 3);
-                }
+                    lines[i].pieces[0] = "m" + (lines[i].pieces.Count - 3);
                 else if (mathfunc.ContainsKey(functio))
                 {
                     lines[i].pieces[0] = mathfunc[functio][0];
@@ -804,6 +748,7 @@ namespace fazfucku
                     lines[i].pieces[0] = shorthand[functio];
             }
         }
+        #endregion
         //output
         string outputfile(bool addmarkers)
         {
