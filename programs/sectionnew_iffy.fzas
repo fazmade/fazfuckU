@@ -1,0 +1,21 @@
+print|"1 = initial if, 2 = elif, else|0
+console_getline|inp|1
+section|2
+{|3
+comp|B|inp|=|"1"|2
+next_unless|0|2
+end|6
+print|"if statement|4
+}|5
+connection|6
+{|7
+comp|B|inp|=|"2"|6
+next_unless|0|6
+print|"elif statement|8
+}|9
+else|10
+{|11
+print|"else statement|12
+}|13
+print|"da end|14
+release|15

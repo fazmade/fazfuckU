@@ -162,6 +162,13 @@ namespace fazfucku
                             Console.WriteLine(e.ToString());
                         }
                         break;
+                    case "sound":
+                        soundic = !soundic;
+                        if (soundic)
+                            Console.WriteLine("sound on");
+                        else
+                            Console.WriteLine("sound off");
+                        break;
                     default:
                         if (File.Exists(input[0]))
                             filelocation = input[0];

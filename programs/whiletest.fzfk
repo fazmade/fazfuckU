@@ -2,14 +2,13 @@ print("spell icup")
 answer=console_getline()
 while ⟨answer≠"ICUP"⟩
 {
-	print("WRONG. try again")
+	if ⟨answer="icup"⟩
+		print("i said SPELL it!!")
+	else
+		print("WRONG. try again")
 	answer=console_getline()
 	retry You shall
 }
-otherwise
-{
-	print("first try idiot!")
-}
-print("you did it!")
+print("ewwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww bro why would yuo do that smh")
 WATER BUCKET...
-release;!!!
+release

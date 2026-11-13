@@ -135,7 +135,7 @@ namespace fazfucku
                         }
                         else if (curchar == ';')
                         {
-                            while (char.IsWhiteSpace(curchar) && curchar != '\n')
+                            while (char.IsWhiteSpace(curchar) && curchar != '\n' && i < dafile.Length)
                             {
                                 i++;
                                 curchar = dafile[i];
@@ -148,7 +148,7 @@ namespace fazfucku
                         }
                         else if (char.IsUpper(curchar))
                         {
-                            while (curchar != '\n')
+                            while (curchar != '\n' && i < dafile.Length)
                             {
                                 i++;
                                 curchar = dafile[i];
@@ -360,33 +360,33 @@ namespace fazfucku
                                     lines.Insert(i+2, new lineinfo(lines[i].originallineid, linetype.function, parsecond(lines[i].pieces[2], "B")));
                                     lines.Insert(i+3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "next_unless", "0" }));
                                     lines[i].pieces = new List<string> { "connection" };
-                                    lines.Insert(i-2, new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
+                                    lines.Insert(i-1, new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
                                     i++;
                                     break;
                                 case "else":
                                     lines[i].pieces = new List<string> { "connection" };
-                                    lines.Insert(i - 2, new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
+                                    lines.Insert(i-1, new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
                                     i++;
-                                    break;
-                                case "otherwise":
-                                    lines[i].pieces = new List<string> { "connection" };
                                     break;
                                 case "while":
                                     List<string> conditioncheck = parsecond(lines[i].pieces[2], "B");
-                                    int origid = lines[i].originallineid;
-                                    lines.Insert(i + 2, new lineinfo(origid, linetype.function, conditioncheck));
-                                    lines.Insert(i + 3, new lineinfo(origid, linetype.function, new List<string> { "end_unless", "0" }));
-                                    int skap = skipindentation(i + 1, 0);
-                                    lines.Insert(skap, new lineinfo(origid, linetype.standalone, new List<string> { "retry" }));
-                                    if (lines[skap+1].pieces[0] == "otherwise")
+                                    lines.Insert(i+2, new lineinfo(lines[i].originallineid, linetype.function, conditioncheck));
+                                    lines.Insert(i+3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "end_unless", "0" }));
+                                    lines.Insert(skipindentation(i+1, 0), new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "restart" }));
+                                    lines[i].pieces = new List<string> { "section" };
+                                    /*if (lines[skap+1].pieces[0] == "otherwise")
                                     {
                                         lines.Insert(i, new lineinfo(origid, linetype.function, conditioncheck));
                                         lines.Insert(i + 3, new lineinfo(origid, linetype.function, new List<string> { "next_unless", "-1" })); //the next flag would be on the otherwise connection; add offset of minus one since we're not in that indent yet
-                                    }
-                                    lines[i].pieces = new List<string> { "section" };
+                                    }*/
+                                    break;
+                                case "otherwise":
+                                    doerror("otherwise not supported yet ):");
+                                    lines[i].pieces = new List<string> { "connection" };
                                     break;
                             }
                         }
+                        else
                         {
                             lines.Insert(i, new lineinfo(lines[i].originallineid, linetype.fazfuck, parsecond(lines[i].pieces[2], "B")));
                             i++;
@@ -486,6 +486,10 @@ namespace fazfucku
                         else
                             daline[piecey] += jumbojosh;
                     }
+                    if (daline[2].StartsWith("\"") || daline[2].StartsWith("«"))
+                        daline[2] = "\"" + daline[2].Substring(1, daline[2].Length - 2);
+                    if (daline[4].StartsWith("\"") || daline[4].StartsWith("«"))
+                        daline[4] = "\"" + daline[4].Substring(1, daline[4].Length - 2);
                     return daline;
                 }
             }
@@ -507,6 +511,10 @@ namespace fazfucku
 
             if (outputvar == string.Empty)
                 outputvar = isalisteventhebestchoiceforthis[0];
+            if (isalisteventhebestchoiceforthis[0].StartsWith("\"") || isalisteventhebestchoiceforthis[0].StartsWith("«"))
+                isalisteventhebestchoiceforthis[0] = "\"" + isalisteventhebestchoiceforthis[0].Substring(1, isalisteventhebestchoiceforthis[0].Length - 2);
+            if (isalisteventhebestchoiceforthis[2].StartsWith("\"") || isalisteventhebestchoiceforthis[2].StartsWith("«"))
+                isalisteventhebestchoiceforthis[2] = "\"" + isalisteventhebestchoiceforthis[2].Substring(1, isalisteventhebestchoiceforthis[2].Length - 2);
             if (isalisteventhebestchoiceforthis.Count == 1)
                 return new List<string> { "set", outputvar, isalisteventhebestchoiceforthis[0] };
             else

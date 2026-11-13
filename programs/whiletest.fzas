@@ -1,0 +1,13 @@
+pr|"spell icup|0
+cons_gtline|answer|1
+c|B|answer|≠|"ICUP|2
+cdg|11|2
+c|B|answer|=|"icup|4
+cdg|7|4
+pr|"i said SPELL it!!|5
+pr|"WRONG. try again|7
+cons_gtline|answer|8
+retry|9
+go|2|2
+pr|"ewwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww bro why would yuo do that smh|11
+rel|12
