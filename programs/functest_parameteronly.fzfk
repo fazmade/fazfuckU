@@ -1,0 +1,17 @@
+blah(prefunc1)
+doaflip("I AM. THE PURPLE FLY", false)
+blah(afterfunc1)
+blah(prefunc2)
+doaflip("CUM AND SEE DE SHOW TONIGHT!!!!!", true)
+blah(afterfunc2)
+release
+
+func doaflip(isay, doubleit)
+{
+	print(isay)
+	if ⟨doubleit⟩
+	{
+		print(isay)
+	}
+	return
+}

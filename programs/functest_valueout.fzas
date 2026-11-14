@@ -1,0 +1,19 @@
+blah|prefunc1|0
+fstk_add|answer|@+2|1|2|1
+goto|@Usum|1
+fstk_pop|answer|1
+print|answer|2
+blah|afterfunc1|3
+blah|prefunc2|4
+fstk_add|answer|@+2|5|5|5
+goto|@Usum|5
+fstk_pop|answer|5
+print|answer|6
+blah|afterfunc2|7
+release|8
+func |sum|[|res|]|(|a|b|)<unique0|9
+{|11
+math|res|+|a|b|12
+fstk_discard|L2|13
+fstk_popgoto|13
+}|14

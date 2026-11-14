@@ -1,0 +1,15 @@
+blah(prefunc1)
+answer=sum(1,2)
+print(answer)
+blah(afterfunc1)
+blah(prefunc2)
+answer=sum(5,5)
+print(answer)
+blah(afterfunc2)
+release
+
+func sum[res](a, b)
+{
+	res=(a+b)
+	return
+}

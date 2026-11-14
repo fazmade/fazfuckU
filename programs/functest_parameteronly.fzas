@@ -1,0 +1,21 @@
+blah|prefunc1|0
+fstk_add|@+2|"I AM. THE PURPLE FLY|false|1
+goto|@Udoaflip|1
+blah|afterfunc1|2
+blah|prefunc2|3
+fstk_add|@+2|"CUM AND SEE DE SHOW TONIGHT!!!!!|true|4
+goto|@Udoaflip|4
+blah|afterfunc2|5
+release|6
+func |doaflip|(|isay|doubleit|)<unique0|7
+{|9
+print|isay|10
+section<start1|11
+{|12
+set|B|doubleit|11
+conddontgoto|@next1|11
+print|isay|13
+}|14
+fstk_discard|L2<end1|15
+fstk_popgoto|15
+}|16
