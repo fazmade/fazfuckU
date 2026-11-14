@@ -6,7 +6,6 @@ using static fazfucku.marker;
 
 namespace fazfucku
 {
-    enum linetype { math, mathdirect, boel, booldirect, function, functionset, standalone, controlfunction, set, definationhookfunc, definationsection, broken, theresNOTHING, functionboolnargumentset, fazfuck, controlfunctionarged }
     internal class fazfuckucompiler
     {
         public string[] inputfile;
@@ -116,7 +115,7 @@ namespace fazfucku
                             popline();
                         else if (char.IsWhiteSpace(curchar))
                         {
-                            if (workingline.pieces.Count == 0 && (workingtoken == "func" || workingtoken == "section" || workingtoken == "hook"))
+                            if (workingline.pieces.Count == 0 && (workingtoken == "func" || workingtoken == "inlinefunc" || workingtoken == "hook"))
                             {
                                 workingtoken += " ";
                                 poptoken();
@@ -241,15 +240,17 @@ namespace fazfucku
             if (daline.Count == 0)
                 return linetype.theresNOTHING;
             if (daline.Count == 1)
+            {
+                if (blockfunctions.Contains(daline[0]))
+                    return linetype.blockfunc;
                 return linetype.standalone;
+            }
             if (daline[0] == "(")
                 return linetype.mathdirect;
             if (daline[0] == "⟨")
                 return linetype.booldirect;
-            if (daline[0] == "func " || daline[0] == "hook ")
-                return linetype.definationhookfunc;
-            if (daline[0] == "section ")
-                return linetype.definationsection;
+            if (daline[0] == "func " || daline[0] == "inlinefunc ")
+                return linetype.definationfunc;
             if (daline[1] == "=")
             {
                 if (daline.Count < 3)
@@ -263,20 +264,28 @@ namespace fazfucku
                 if (daline[3] == "(" || daline[3] == "[")
                     return linetype.functionset;
                 if (daline[3] == "⟨")
-                    return linetype.functionboolnargumentset;
+                    return linetype.boolfunctionnargumentset;
                 return linetype.broken;
             }
             if (daline[1] == "(" || daline[1] == "[")
                 return linetype.function;
             if (daline[1] == "⟨")
             {
+                if (blockfunctions.Contains(daline[0]))
+                    return linetype.blockfunc;
                 if (daline.Count > 4)
-                    return linetype.controlfunctionarged;
-                return linetype.controlfunction;
+                    return linetype.boolfunctionwarg;
+                return linetype.boolfunction;
             }
             return linetype.broken;
         }
         #endregion
+        Dictionary<string, int> uniquemarkers= new Dictionary<string, int>();
+        void adduniquemarker(int line, string nae)
+        {
+            lines[line].markers.Add(new marker(markertype.unique, uniquemarkers.Count));
+            uniquemarkers.Add(nae, -1);
+        }
         //main fazass conversion
         #region main fazass conversion
         void mainconversion()
@@ -346,51 +355,47 @@ namespace fazfucku
                         lines[i].pieces = parsecond(lines[i].pieces[3], lines[i].pieces[0]);
                         //lines[i].type = linetype.fazfuck;
                         break;
-                    case linetype.controlfunction:
-                        if (blockfunctions.Contains(lines[i].pieces[0]))
+                    case linetype.boolfunction:
+                        lines.Insert(i, new lineinfo(lines[i].originallineid, linetype.fazfuck, parsecond(lines[i].pieces[2], "B")));
+                        i++;
+                        lines[i].pieces.RemoveRange(1, lines[i].pieces.Count - 1);
+                        break;
+                    case linetype.blockfunc:
+                        switch (lines[i].pieces[0])
                         {
-                            switch(lines[i].pieces[0])
-                            {
-                                case "if":
-                                    lines.Insert(i+2, new lineinfo(lines[i].originallineid, linetype.function, parsecond(lines[i].pieces[2], "B")));
-                                    lines.Insert(i+3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "next_unless", "0" }));
-                                    lines[i].pieces = new List<string> { "section" };
-                                    break;
-                                case "elif":
-                                    lines.Insert(i+2, new lineinfo(lines[i].originallineid, linetype.function, parsecond(lines[i].pieces[2], "B")));
-                                    lines.Insert(i+3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "next_unless", "0" }));
-                                    lines[i].pieces = new List<string> { "connection" };
-                                    lines.Insert(i-1, new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
-                                    i++;
-                                    break;
-                                case "else":
-                                    lines[i].pieces = new List<string> { "connection" };
-                                    lines.Insert(i-1, new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
-                                    i++;
-                                    break;
-                                case "while":
-                                    List<string> conditioncheck = parsecond(lines[i].pieces[2], "B");
-                                    lines.Insert(i+2, new lineinfo(lines[i].originallineid, linetype.function, conditioncheck));
-                                    lines.Insert(i+3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "end_unless", "0" }));
-                                    lines.Insert(skipindentation(i+1, 0), new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "restart" }));
-                                    lines[i].pieces = new List<string> { "section" };
-                                    /*if (lines[skap+1].pieces[0] == "otherwise")
-                                    {
-                                        lines.Insert(i, new lineinfo(origid, linetype.function, conditioncheck));
-                                        lines.Insert(i + 3, new lineinfo(origid, linetype.function, new List<string> { "next_unless", "-1" })); //the next flag would be on the otherwise connection; add offset of minus one since we're not in that indent yet
-                                    }*/
-                                    break;
-                                case "otherwise":
-                                    doerror("otherwise not supported yet ):");
-                                    lines[i].pieces = new List<string> { "connection" };
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            lines.Insert(i, new lineinfo(lines[i].originallineid, linetype.fazfuck, parsecond(lines[i].pieces[2], "B")));
-                            i++;
-                            lines[i].pieces.RemoveRange(1, lines[i].pieces.Count - 1);
+                            case "if":
+                                lines.Insert(i + 2, new lineinfo(lines[i].originallineid, linetype.function, parsecond(lines[i].pieces[2], "B")));
+                                lines.Insert(i + 3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "next_unless", "0" }));
+                                lines[i].pieces = new List<string> { "section" };
+                                break;
+                            case "elif":
+                                lines.Insert(i + 2, new lineinfo(lines[i].originallineid, linetype.function, parsecond(lines[i].pieces[2], "B")));
+                                lines.Insert(i + 3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "next_unless", "0" }));
+                                lines[i].pieces = new List<string> { "connection" };
+                                lines.Insert(i - 1, new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
+                                i++;
+                                break;
+                            case "else":
+                                lines[i].pieces = new List<string> { "connection" };
+                                lines.Insert(i - 1, new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "end" }));
+                                i++;
+                                break;
+                            case "while":
+                                List<string> conditioncheck = parsecond(lines[i].pieces[2], "B");
+                                lines.Insert(i + 2, new lineinfo(lines[i].originallineid, linetype.function, conditioncheck));
+                                lines.Insert(i + 3, new lineinfo(lines[i].originallineid, linetype.function, new List<string> { "end_unless", "0" }));
+                                lines.Insert(skipindentation(i + 1, 0), new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "restart" }));
+                                lines[i].pieces = new List<string> { "section" };
+                                /*if (lines[skap+1].pieces[0] == "otherwise")
+                                {
+                                    lines.Insert(i, new lineinfo(origid, linetype.function, conditioncheck));
+                                    lines.Insert(i + 3, new lineinfo(origid, linetype.function, new List<string> { "next_unless", "-1" })); //the next flag would be on the otherwise connection; add offset of minus one since we're not in that indent yet
+                                }*/
+                                break;
+                            case "otherwise":
+                                doerror("otherwise not supported yet ):");
+                                lines[i].pieces = new List<string> { "connection" };
+                                break;
                         }
                         break;
                 }
@@ -449,14 +454,14 @@ namespace fazfucku
             else
                 num2 = peepees[1];
         }
-        Dictionary<string, string> specialcomparisons = new Dictionary<string, string>
+        public Dictionary<string, string> specialcomparisons = new Dictionary<string, string>
         {
-            { "contains", "c" },
+            /*{ "contains", "c" },
             { "!contains", "!c" },
             { "startswith", "s" },
             { "!startswith", "!s" },
             { "endswith", "e" },
-            { "!endswith", "!e" }
+            { "!endswith", "!e" }*/
         };
         List<string> parsecond(string toparse, string outputvar)
         {
@@ -511,21 +516,23 @@ namespace fazfucku
 
             if (outputvar == string.Empty)
                 outputvar = isalisteventhebestchoiceforthis[0];
-            if (isalisteventhebestchoiceforthis[0].StartsWith("\"") || isalisteventhebestchoiceforthis[0].StartsWith("«"))
-                isalisteventhebestchoiceforthis[0] = "\"" + isalisteventhebestchoiceforthis[0].Substring(1, isalisteventhebestchoiceforthis[0].Length - 2);
-            if (isalisteventhebestchoiceforthis[2].StartsWith("\"") || isalisteventhebestchoiceforthis[2].StartsWith("«"))
-                isalisteventhebestchoiceforthis[2] = "\"" + isalisteventhebestchoiceforthis[2].Substring(1, isalisteventhebestchoiceforthis[2].Length - 2);
             if (isalisteventhebestchoiceforthis.Count == 1)
                 return new List<string> { "set", outputvar, isalisteventhebestchoiceforthis[0] };
             else
+            {
+                if (isalisteventhebestchoiceforthis[0].StartsWith("\"") || isalisteventhebestchoiceforthis[0].StartsWith("«"))
+                    isalisteventhebestchoiceforthis[0] = "\"" + isalisteventhebestchoiceforthis[0].Substring(1, isalisteventhebestchoiceforthis[0].Length - 2);
+                if (isalisteventhebestchoiceforthis[2].StartsWith("\"") || isalisteventhebestchoiceforthis[2].StartsWith("«"))
+                    isalisteventhebestchoiceforthis[2] = "\"" + isalisteventhebestchoiceforthis[2].Substring(1, isalisteventhebestchoiceforthis[2].Length - 2);
                 return new List<string> { "comp", outputvar, isalisteventhebestchoiceforthis[0], isalisteventhebestchoiceforthis[1], isalisteventhebestchoiceforthis[2] };
+            }
         }
         #endregion
         //control flow conversion
         #region this part makes me want to kill myself (:
         public Dictionary<string, string[]> controlgotoes = new Dictionary<string, string[]>
         {
-            { "restart", new string[] { "goto", "@start" } },
+            /*{ "restart", new string[] { "goto", "@start" } },
             { "next", new string[] { "goto", "@next" } },
             { "end", new string[] { "goto", "@end" } },
             { "restart_unless", new string[] { "conddontgoto", "@start" } },
@@ -533,7 +540,7 @@ namespace fazfucku
             { "end_unless", new string[] { "conddontgoto", "@end" } },
             { "restart_if", new string[] { "conddogoto", "@start" } },
             { "next_if", new string[] { "conddogoto", "@next" } },
-            { "end_if", new string[] { "conddogoto", "@end" } }
+            { "end_if", new string[] { "conddogoto", "@end" } }*/
         };
         void gototime()
         {
@@ -682,7 +689,7 @@ namespace fazfucku
         #region he shortening
         public Dictionary<string, string> shorthand = new Dictionary<string, string>
         {
-            { "print", "pr" },
+            /*{ "print", "pr" },
             { "release", "rel" },
             { "goto", "go" },
             { "conddontgoto", "cdg" },
@@ -715,11 +722,11 @@ namespace fazfucku
             { "list_removeallof", "l_rl" },
             { "list_clear", "l_cl" },
             { "list_indexof", "l_i" },
-            { "list_has", "l_h" }
+            { "list_has", "l_h" }*/
         };
         public Dictionary<string, string[]> mathfunc = new Dictionary<string, string[]>
         {
-            { "round", new string[] { "m2", "rn" } },
+            /*{ "round", new string[] { "m2", "rn" } },
             { "floor", new string[] { "m2", "fl" } },
             { "flr", new string[] { "m2", "fl" } },
             { "ceiling", new string[] { "m2", "cl" } },
@@ -738,7 +745,7 @@ namespace fazfucku
             { "√", new string[] { "m1", "sq" } },
             { "cadd", new string[] { "mx", "c+" } },
             { "cmul", new string[] { "mx", "c×" } },
-            { "sqradd", new string[] { "mx", "sa" } }
+            { "sqradd", new string[] { "mx", "sa" } }*/
         };
         void makeshort()
         {
@@ -771,6 +778,7 @@ namespace fazfucku
             return thebuilder.ToString().TrimEnd('\n').TrimEnd('\r');
         }
     }
+    enum linetype { math, mathdirect, boel, booldirect, function, functionset, standalone, boolfunction, set, definationfunc, broken, theresNOTHING, boolfunctionnargumentset, fazfuck, boolfunctionwarg, blockfunc }
     class lineinfo
     {
         public List<string> pieces = new List<string>();
@@ -813,5 +821,10 @@ namespace fazfucku
         {
             return tipe.ToString() + markerid.ToString();
         }
+    }
+    class funcdef
+    {
+        public int parametercount;
+        public bool inline;
     }
 }

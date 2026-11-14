@@ -1,7 +1,5 @@
 flags
 
-hooks
-
 function shorthands
 print pr
 release rel
@@ -37,6 +35,7 @@ list_removeallof l_rl
 list_clear l_cl
 list_indexof l_i
 list_has l_h
+hook_define h_d
 
 math functions
 round m2 rn

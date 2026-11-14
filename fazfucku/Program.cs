@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Media;
 
@@ -7,7 +8,7 @@ namespace fazfucku
     internal class Program
     {
         static string filelocation;
-        static string compileinfofile = string.Empty;
+        static List<string> compileinfoes = new List<string> { "base" };
         static bool soundic = true;
         static void Main(string[] args)
         {
@@ -64,6 +65,7 @@ namespace fazfucku
                         {
                             fazfuckucompiler compilah = new fazfuckucompiler();
                             compilah.inputfile = File.ReadAllLines(filelocation);
+                            bool listcompileinfostuff = false;
                             if (input.Length > 1)
                             {
                                 for (int i = 1; i < input.Length; i++)
@@ -79,19 +81,30 @@ namespace fazfucku
                                             i++;
                                             compilah.prematureoutput = int.Parse(input[i]);
                                             break;
+                                        case "listcompileinfostuff":
+                                            listcompileinfostuff = true;
+                                            break;
                                     }
                                 }
                             }
-                            if (compileinfofile != string.Empty)
+                            foreach (string compileinfo in compileinfoes)
                             {
-                                string[] infoed = File.ReadAllLines(compileinfofile);
+                                string[] infoed = File.ReadAllLines(getcompileinfopath(compileinfo));
                                 int section = 0;
                                 foreach (string line in infoed)
                                 {
-                                    if (line == "hooks")
-                                        section = 1;
+                                    if (line == "flags")
+                                        section = 0;
+                                    //else if (line == "hooks")
+                                    //    section = 1;
                                     else if (line == "function shorthands")
                                         section = 2;
+                                    else if (line == "math functions")
+                                        section = 3;
+                                    else if (line == "special comparisons")
+                                        section = 4;
+                                    else if (line == "control gotoes")
+                                        section = 5;
                                     else if (line != string.Empty)
                                     {
                                         switch (section)
@@ -100,9 +113,45 @@ namespace fazfucku
                                                 string[] iuweasfiosdugiusdhgdhsj = line.Split(' ');
                                                 compilah.shorthand.Add(iuweasfiosdugiusdhgdhsj[0], iuweasfiosdugiusdhgdhsj[1]);
                                                 break;
+                                            case 3:
+                                                string[] jsdfsadhfkhsadfkhalhfaksdj = line.Split(' ');
+                                                compilah.mathfunc.Add(jsdfsadhfkhsadfkhalhfaksdj[0], new string[] { jsdfsadhfkhsadfkhalhfaksdj[1], jsdfsadhfkhsadfkhalhfaksdj[2] });
+                                                break;
+                                            case 4:
+                                                string[] djfsdajfkldsajfkldjksjdf = line.Split(' ');
+                                                compilah.specialcomparisons.Add(djfsdajfkldsajfkldjksjdf[0], djfsdajfkldsajfkldjksjdf[1]);
+                                                break;
+                                            case 5:
+                                                string[] shfjkhsdkjghksdjhgkjd = line.Split(' ');
+                                                compilah.controlgotoes.Add(shfjkhsdkjghksdjhgkjd[0], new string[] { shfjkhsdkjghksdjhgkjd[1], shfjkhsdkjghksdjhgkjd[2] });
+                                                break;
                                         }
                                     }
                                 }
+                            }
+                            if (listcompileinfostuff)
+                            {
+                                Console.WriteLine("function shorthands");
+                                foreach (KeyValuePair<string, string> jumbojosh in compilah.shorthand)
+                                {
+                                    Console.WriteLine(jumbojosh.Key + " > " + jumbojosh.Value);
+                                }
+                                Console.WriteLine("math functions");
+                                foreach (KeyValuePair<string, string[]> jumbojosh in compilah.mathfunc)
+                                {
+                                    Console.WriteLine(jumbojosh.Key + " > " + jumbojosh.Value[0] + " " + jumbojosh.Value[1]);
+                                }
+                                Console.WriteLine("special comparisons");
+                                foreach (KeyValuePair<string, string> jumbojosh in compilah.specialcomparisons)
+                                {
+                                    Console.WriteLine(jumbojosh.Key + " > " + jumbojosh.Value);
+                                }
+                                Console.WriteLine("control gotoes");
+                                foreach (KeyValuePair<string, string[]> jumbojosh in compilah.controlgotoes)
+                                {
+                                    Console.WriteLine(jumbojosh.Key + " > " + jumbojosh.Value[0] + " " + jumbojosh.Value[1]);
+                                }
+                                Console.WriteLine();
                             }
                             string thecompiled = compilah.compile();
                             if (thecompiled != string.Empty)
@@ -125,33 +174,45 @@ namespace fazfucku
                         {
                             if (input.Length == 1)
                             {
-                                if (compileinfofile == string.Empty)
-                                    Console.WriteLine("no compile info selected");
+                                Console.WriteLine();
+                                if (compileinfoes.Count == 0)
+                                    Console.WriteLine("none compile infoes selected. why?");
                                 else
-                                    Console.WriteLine("currently using " + Path.GetFileNameWithoutExtension(compileinfofile).Substring(3) + " (" + compileinfofile + ")");
+                                {
+                                    Console.WriteLine("currently using:");
+                                    foreach (string compileinfo in compileinfoes)
+                                    {
+                                        Console.WriteLine(compileinfo + " (" + getcompileinfopath(compileinfo) + ")");
+                                    }
+                                }
+                                Console.WriteLine();
                                 Console.WriteLine("available:");
                                 foreach (string fiel in Directory.GetFiles(Directory.GetCurrentDirectory()))
                                 {
                                     string name = Path.GetFileName(fiel);
                                     if (name.StartsWith("ci_") && name.EndsWith(".txt"))
-                                        Console.WriteLine(name.Substring(3, name.Length - 7));
+                                        Console.WriteLine(getcompileinfoname(fiel) + " (" + fiel + ")");
                                 }
+                                Console.WriteLine();
                             }
                             else
                             {
-                                if (input[1] == string.Empty)
-                                    compileinfofile = "";
+                                if (compileinfoes.Contains(input[1]))
+                                {
+                                    compileinfoes.Remove(input[1]);
+                                    Console.WriteLine("removed " + input[1] + " from the current compile infoes");
+                                }
                                 else
                                 {
-                                    string location = Path.Combine(Directory.GetCurrentDirectory(), "ci_" + input[1] + ".txt");
+                                    string location = getcompileinfopath(input[1]);
                                     if (File.Exists(location))
                                     {
-                                        compileinfofile = location;
-                                        Console.WriteLine("now using " + input[1] + " (" + compileinfofile + ")");
+                                        compileinfoes.Add(input[1]);
+                                        Console.WriteLine("added " + input[1] + " to the current compile infoes");
                                     }
                                     else
                                     {
-                                        Console.WriteLine("invalid compile info! (" + location + ")");
+                                        Console.WriteLine(input[1] + " at " + location + " is not an existant compile info");
                                         funnywindowssound(soundeffect.error);
                                     }
                                 }
@@ -179,6 +240,14 @@ namespace fazfucku
                         }
                         break;
                 }
+            }
+            string getcompileinfopath(string name)
+            {
+                return Path.Combine(Directory.GetCurrentDirectory(), "ci_" + name + ".txt");
+            }
+            string getcompileinfoname(string path)
+            {
+                return Path.GetFileNameWithoutExtension(path).Substring(3);
             }
         }
         public enum soundeffect

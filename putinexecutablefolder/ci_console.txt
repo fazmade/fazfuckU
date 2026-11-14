@@ -1,9 +1,6 @@
 flags
 supports_arbitrary_parameter_counts supports_lists
 
-hooks
-presskey nocatch 1
-
 function shorthands
 console_getline cons_gtline
 console_checkescape cons_cheesc

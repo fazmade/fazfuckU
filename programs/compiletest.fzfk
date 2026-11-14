@@ -2,19 +2,17 @@ x=2
 y=3
 z=(x+y)
 fucked=z
-debug_variables
 if ⟨z = 5⟩
 {
 	print("yeah")
 	(fucked×2)
 	shitass=⟨fucked≠10⟩
-	debug_variables
 	if ⟨shitass⟩
 		print("nope")
 	else
 		print("yeah")
 }
-elif ⟨z = 5⟩
+elif ⟨z = 3⟩
 {
 	print("3!")
 }
