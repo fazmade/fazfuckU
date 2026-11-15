@@ -12,6 +12,7 @@ namespace fazfucku
         List<lineinfo> lines;
         public bool includemarkers;
         public int prematureoutput = -1;
+        public bool nofunctions;
         public string compile()
         {
             try
@@ -21,34 +22,52 @@ namespace fazfucku
                 initiallexer();
                 if (prematureoutput == 1)
                     return outputfile(false);
+
                 Console.WriteLine("compiler: line detection start");
                 linedetector();
                 if (prematureoutput == 2)
-                    return outputfile(false);
+                    return outputfile(true);
+
                 Console.WriteLine("compiler: main conversion start");
                 mainconversion();
                 if (prematureoutput == 3)
-                    return outputfile(false);
+                    return outputfile(true);
+
+                if (nofunctions)
+                    Console.WriteLine("compiler: skipping function stuff lol");
+                else
+                {
+                    Console.WriteLine("compiler: function stuff start");
+                    functionstuff();
+                    if (prematureoutput == 4)
+                        return outputfile(true);
+                }
+
                 Console.WriteLine("compiler: convert control flow start");
                 gototime();
-                if (prematureoutput == 4)
-                    return outputfile(true);
-                Console.WriteLine("compiler: remove old control start");
-                removeoldcontrol();
                 if (prematureoutput == 5)
                     return outputfile(true);
-                Console.WriteLine("compiler: get unique marker locations start");
-                getuniquemarkerlocations();
+
+                Console.WriteLine("compiler: remove old control start");
+                removeoldcontrol();
                 if (prematureoutput == 6)
                     return outputfile(true);
-                Console.WriteLine("compiler: convert from dynamic start");
-                convertfromdynamic();
+
+                Console.WriteLine("compiler: get unique marker locations start");
+                getuniquemarkerlocations();
                 if (prematureoutput == 7)
                     return outputfile(true);
-                Console.WriteLine("compiler: replace longer function names");
-                makeshort();
+
+                Console.WriteLine("compiler: convert from dynamic start");
+                convertfromdynamic();
                 if (prematureoutput == 8)
                     return outputfile(true);
+
+                Console.WriteLine("compiler: replace longer function names");
+                makeshort();
+                if (prematureoutput == 9)
+                    return outputfile(true);
+
                 Console.WriteLine("compiler: output file");
                 return outputfile(includemarkers);
             }
@@ -165,7 +184,11 @@ namespace fazfucku
                             poptoken();
                             curlextype = lextype.logicalic;
                         }
-                        else if (curchar == '(' || curchar == ')' || curchar == ',' || curchar == '=' || curchar == '[' || curchar == ']')
+                        else if (curchar == '|')
+                        {
+                            poptoken();
+                        }
+                        else if (curchar == '(' || curchar == ')' || curchar == ',' || curchar == '=' || curchar == '[' || curchar == ']' || curchar == '¶')
                         {
                             poptoken();
                             workingtoken = curchar.ToString();
@@ -218,7 +241,7 @@ namespace fazfucku
             popline();
         }
         #endregion
-        Dictionary<string, funcdef> customfunctions = new Dictionary<string, funcdef>();
+        Dictionary<string, bool> customfunctions = new Dictionary<string, bool>(); //the bool is if it's inline
         //line detection
         #region line detection
         void linedetector()
@@ -231,7 +254,7 @@ namespace fazfucku
                     doerror("cannot get the type of line for " + lines[i].originallineid + " (" + i + ")!");
                 else if (ligmaballs == linetype.blockfunc)
                 {
-                    if (lines[i+1].pieces[0] != "{")
+                    if (lines[i + 1].pieces[0] != "{")
                     {
                         lines.Insert(i + 1, new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "{" }));
                         lines.Insert(i + 3, new lineinfo(lines[i].originallineid, linetype.standalone, new List<string> { "}" }));
@@ -239,16 +262,7 @@ namespace fazfucku
                 }
                 else if (ligmaballs == linetype.definationfunc)
                 {
-                    funcdef newdef = new funcdef();
-                    if (lines[i].pieces[0] == "inlinefunc")
-                        newdef.inline = true;
-                    //get parameter count
-                    Predicate<string> commaer = piec => piec == ",";
-                    List<string> lineclone = lines[i].pieces;
-                    lineclone.RemoveAll(commaer);
-                    newdef.parametercount = lineclone.Count - lineclone.IndexOf("(") - 2;
-
-                    customfunctions.Add(lines[i].pieces[1], newdef);
+                    customfunctions.Add(lines[i].pieces[1], lines[i].pieces[0] == "inlinefunc");
                     adduniquemarker(i, lines[i].pieces[1]);
                 }
                 //Console.WriteLine(ligmaballs.ToString());
@@ -270,6 +284,8 @@ namespace fazfucku
                 return linetype.booldirect;
             if (daline[0] == "func " || daline[0] == "inlinefunc ")
                 return linetype.definationfunc;
+            if (daline[0] == "¶")
+                return linetype.markerlabel;
             if (daline[1] == ",")
                 return getlinetype(daline.GetRange(2, daline.Count - 2));
             if (daline[1] == "=")
@@ -301,7 +317,7 @@ namespace fazfucku
             return linetype.broken;
         }
         #endregion
-        Dictionary<string, int> uniquemarkers= new Dictionary<string, int>();
+        Dictionary<string, int> uniquemarkers = new Dictionary<string, int>();
         void adduniquemarker(int line, string nae)
         {
             lines[line].markers.Add(new marker(markertype.unique, uniquemarkers.Count));
@@ -317,27 +333,20 @@ namespace fazfucku
                 switch (lines[i].type)
                 {
                     case linetype.theresNOTHING:
-                        lines.RemoveAt(i);
+                        removeline(i);
                         i--;
                         break;
                     case linetype.function:
                         if (customfunctions.ContainsKey(lines[i].pieces[0]))
                         {
                             //adds goto
-                            lines.Insert(i+1, new lineinfo(lines[i].originallineid, linetype.fazfuck, new List<string> { "goto", "@U" + lines[i].pieces[0] }));
+                            lines.Insert(i+1, new lineinfo(lines[i].originallineid, linetype.fazfuck, new List<string> { "goto", "@u" + lines[i].pieces[0] }));
                             //the jank of varialing
                             lines[i].pieces.RemoveAll(commaer);
-                            List<string> parameters = new List<string>();
-                            if (lines[i].pieces.Contains("("))
+                            List<string> parameters = getpartsbetween(lines[i].pieces, "(", ")");
+                            List<string> outvariables = getpartsbetween(lines[i].pieces, "[", "]");
+                            if (outvariables.Count != 0)
                             {
-                                int startindex = lines[i].pieces.IndexOf("(")+1;
-                                parameters = lines[i].pieces.GetRange(startindex, lines[i].pieces.Count - startindex - 1);
-                            }
-                            List<string> outvariables = new List<string>();
-                            if (lines[i].pieces.Contains("["))
-                            {
-                                int startindex = lines[i].pieces.IndexOf("[")+1;
-                                outvariables = lines[i].pieces.GetRange(startindex, lines[i].pieces.IndexOf("]") - startindex);
                                 //add pop line
                                 List<string> popperline = new List<string>();
                                 popperline.AddRange(outvariables);
@@ -348,7 +357,7 @@ namespace fazfucku
                             //convert to funcstack add line
                             lines[i].pieces = new List<string> { "fstk_add" };
                             lines[i].pieces.AddRange(outvariables);
-                            lines[i].pieces.Add("@+2");
+                            lines[i].pieces.Add("$@+2");
                             lines[i].pieces.AddRange(parameters);
                         }
                         else
@@ -363,28 +372,18 @@ namespace fazfucku
                         break;
                     case linetype.functionset:
                         {
-                            //adds goto
                             lines[i].pieces.RemoveAll(commaer);
                             int variablecount = lines[i].pieces.IndexOf("=");
                             List<string> setvar = lines[i].pieces.GetRange(0, variablecount);
                             lines[i].pieces.RemoveRange(0, variablecount + 1);
                             if (customfunctions.ContainsKey(lines[i].pieces[0]))
                             {
-                                lines.Insert(i + 1, new lineinfo(lines[i].originallineid, linetype.fazfuck, new List<string> { "goto", "@U" + lines[i].pieces[0] }));
+                                //adds goto
+                                lines.Insert(i + 1, new lineinfo(lines[i].originallineid, linetype.fazfuck, new List<string> { "goto", "@u" + lines[i].pieces[0] }));
                                 //the jank of varialing
                                 lines[i].pieces.RemoveAll(commaer);
-                                List<string> parameters = new List<string>();
-                                if (lines[i].pieces.Contains("("))
-                                {
-                                    int startindex = lines[i].pieces.IndexOf("(")+1;
-                                    parameters = lines[i].pieces.GetRange(startindex, lines[i].pieces.Count - startindex - 1);
-                                }
-                                List<string> outvariables = new List<string>();
-                                if (lines[i].pieces.Contains("["))
-                                {
-                                    int startindex = lines[i].pieces.IndexOf("[")+1;
-                                    outvariables = lines[i].pieces.GetRange(startindex, lines[i].pieces.IndexOf("]") - startindex);
-                                }
+                                List<string> parameters = getpartsbetween(lines[i].pieces, "(", ")");
+                                List<string> outvariables = getpartsbetween(lines[i].pieces, "[", "]");
                                 //add pop line (not in out because a set always should have an out)
                                 List<string> popperline = new List<string>();
                                 popperline.AddRange(setvar);
@@ -394,9 +393,12 @@ namespace fazfucku
                                 lines.Insert(i + 2, new lineinfo(lines[i].originallineid, linetype.fazfuck, popperline));
                                 //convert to funcstack add line
                                 lines[i].pieces = new List<string> { "fstk_add" };
-                                lines[i].pieces.AddRange(setvar);
+                                for (int j = 0; j < setvar.Count; j++)
+                                {
+                                    lines[i].pieces.Add("NUT");
+                                }
                                 lines[i].pieces.AddRange(outvariables);
-                                lines[i].pieces.Add("@+2");
+                                lines[i].pieces.Add("$@+2");
                                 lines[i].pieces.AddRange(parameters);
                             }
                             else
@@ -487,6 +489,14 @@ namespace fazfucku
                                 break;
                         }
                         break;
+                    case linetype.definationfunc:
+                        lines[i].pieces.RemoveAll(commaer);
+                        break;
+                    case linetype.markerlabel:
+                        adduniquemarker(i, lines[i].pieces[1]);
+                        removeline(i);
+                        i--;
+                        break;
                 }
             }
         }
@@ -543,15 +553,7 @@ namespace fazfucku
             else
                 num2 = peepees[1];
         }
-        public Dictionary<string, string> specialcomparisons = new Dictionary<string, string>
-        {
-            /*{ "contains", "c" },
-            { "!contains", "!c" },
-            { "startswith", "s" },
-            { "!startswith", "!s" },
-            { "endswith", "e" },
-            { "!endswith", "!e" }*/
-        };
+        public Dictionary<string, string> specialcomparisons = new Dictionary<string, string>();
         List<string> parsecond(string toparse, string outputvar)
         {
             if (toparse.Contains(" "))
@@ -617,37 +619,71 @@ namespace fazfucku
             }
         }
         #endregion
-        //control flow conversion
-        #region this part makes me want to kill myself (:
-        public Dictionary<string, string[]> controlgotoes = new Dictionary<string, string[]>
+        List<string> getpartsbetween(List<string> parts, string startpiece, string endpiece)
         {
-            /*{ "restart", new string[] { "goto", "@start" } },
-            { "next", new string[] { "goto", "@next" } },
-            { "end", new string[] { "goto", "@end" } },
-            { "restart_unless", new string[] { "conddontgoto", "@start" } },
-            { "next_unless", new string[] { "conddontgoto", "@next" } },
-            { "end_unless", new string[] { "conddontgoto", "@end" } },
-            { "restart_if", new string[] { "conddogoto", "@start" } },
-            { "next_if", new string[] { "conddogoto", "@next" } },
-            { "end_if", new string[] { "conddogoto", "@end" } }*/
-        };
-        void gototime()
+            if (!parts.Contains(startpiece) || !parts.Contains(endpiece))
+                return new List<string>();
+            List<string> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa = new List<string>();
+            int startindex = parts.IndexOf(startpiece) + 1;
+            aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa = parts.GetRange(startindex, parts.IndexOf(endpiece) - startindex);
+            return aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa;
+        }
+        //function stuff
+        #region function stuff
+        void functionstuff()
         {
+            List<string> variablestack = new List<string>();
+            int discardamount = 0;
             int indentation = 0;
-            int currentfunctiondiscards = 0;
             for (int i = 0; i < lines.Count; i++)
             {
                 if (lines[i].type == linetype.definationfunc)
                 {
-                    currentfunctiondiscards = customfunctions[lines[i].pieces[1]].parametercount;
+                    variablestack.AddRange(getpartsbetween(lines[i].pieces, "[", "]"));
+                    variablestack.Add("THIS IS THE PLACEHOLDER FOR HWEERE THE RETURN ID GOES");
+                    List<string> paramaters = getpartsbetween(lines[i].pieces, "(", ")");
+                    discardamount = paramaters.Count;
+                    variablestack.AddRange(paramaters);
+                    variablestack.Reverse();
                 }
                 else if (lines[i].pieces[0] == "return")
                 {
-                    lines[i].pieces = new List<string> { "fstk_discard", "L" + currentfunctiondiscards.ToString() };
-                    lines.Insert(i+1, new lineinfo(lines[i].originallineid, linetype.fazfuck, new List<string> { "fstk_popgoto" }));
+                    lines[i].pieces = new List<string> { "fstk_discard", "L" + discardamount.ToString() };
+                    lines.Insert(i + 1, new lineinfo(lines[i].originallineid, linetype.fazfuck, new List<string> { "fstk_popgoto" }));
                     i++;
                 }
-                else if (lines[i].pieces[0] == "section")
+                else if (lines[i].pieces[0] == "{")
+                    indentation++;
+                else if (lines[i].pieces[0] == "}")
+                {
+                    indentation--;
+                    if (indentation == 0) //we have exit! function!
+                    {
+                        variablestack.Clear();
+                        discardamount = 0;
+                    }
+                }
+                else
+                {
+                    for (int j = 0; j < lines[i].pieces.Count; j++)
+                    {
+                        int pindex = variablestack.IndexOf(lines[i].pieces[j]);
+                        if (pindex != -1)
+                            lines[i].pieces[j] = "S" + pindex;
+                    }
+                }
+            }
+        }
+        #endregion
+        //control flow conversion
+        #region this part makes me want to kill myself (:
+        public Dictionary<string, string[]> controlgotoes = new Dictionary<string, string[]>();
+        void gototime()
+        {
+            int indentation = 0;
+            for (int i = 0; i < lines.Count; i++)
+            {
+                if (lines[i].pieces[0] == "section")
                 {
                     lines[i].markers.Add(new marker(markertype.start, indentation));
                     bool gomytoeloe = true;
@@ -668,10 +704,18 @@ namespace fazfucku
                     indentation--;
                 else if (controlgotoes.ContainsKey(lines[i].pieces[0]))
                 {
-                    int offset = -1;
-                    if (lines[i].pieces.Count > 1)
-                        offset -= int.Parse(lines[i].pieces[1]);
-                    lines[i].pieces = new List<string> { controlgotoes[lines[i].pieces[0]][0], controlgotoes[lines[i].pieces[0]][1] + (indentation + offset) };
+                    string[] gotodef = controlgotoes[lines[i].pieces[0]];
+                    if (gotodef[1] == "@u")
+                    {
+                        lines[i].pieces = new List<string> { gotodef[0], "@u" + lines[i].pieces[1] };
+                    }
+                    else
+                    {
+                        int offset = -1;
+                        if (lines[i].pieces.Count > 1)
+                            offset -= int.Parse(lines[i].pieces[1]);
+                        lines[i].pieces = new List<string> { gotodef[0], gotodef[1] + (indentation + offset) };
+                    }
                 }
             }
         }
@@ -698,13 +742,14 @@ namespace fazfucku
         {
             for (int i = 0; i < lines.Count; i++)
             {
-                if (lines[i].type == linetype.definationfunc  || lines[i].pieces[0] == "{" || lines[i].pieces[0] == "}" || blockfunctions.Contains(lines[i].pieces[0]))
+                if (lines[i].type == linetype.definationfunc || lines[i].type == linetype.blockfunc || lines[i].pieces[0] == "{" || lines[i].pieces[0] == "}")
                 {
                     removeline(i);
                     i--;
                 }
             }
         }
+        #endregion
         void removeline(int index)
         {
             if (lines[index].markers.Count > 0)
@@ -716,7 +761,6 @@ namespace fazfucku
             else
                 lines.RemoveAt(index);
         }
-        #endregion
         //get unique marker locations
         #region get unique marker locations
         void getuniquemarkerlocations()
@@ -750,38 +794,47 @@ namespace fazfucku
                         lines[i].pieces[j] = "T";
                     else if (token == "false")
                         lines[i].pieces[j] = "F";
-                    else if (token.StartsWith("@"))
+                    else if (token.StartsWith("@") || token.StartsWith("$@"))
                     {
+                        bool numappendix = false;
+                        if (token.StartsWith("$"))
+                        {
+                            numappendix = true;
+                            token = token.Substring(1);
+                        }
                         if (token.StartsWith("@+"))
                         {
                             int offset = int.Parse(token.Substring(2));
-                            lines[i].pieces[j] = (i + offset).ToString();
+                            token = (i + offset).ToString();
                         }
                         else if (token.StartsWith("@-"))
                         {
                             int offset = int.Parse(token.Substring(2));
-                            lines[i].pieces[j] = (i - offset).ToString();
+                            token = (i - offset).ToString();
                         }
                         else if (token.StartsWith("@start"))
                         {
                             int searchid = int.Parse(token.Substring(6));
-                            lines[i].pieces[j] = searchmarker(i, markertype.start, searchid, -1).ToString();
+                            token = searchmarker(i, markertype.start, searchid, -1).ToString();
                         }
                         else if (token.StartsWith("@next"))
                         {
                             int searchid = int.Parse(token.Substring(5));
-                            lines[i].pieces[j] = searchmarker(i, markertype.next, searchid, 1).ToString();
+                            token = searchmarker(i, markertype.next, searchid, 1).ToString();
                         }
                         else if (token.StartsWith("@end"))
                         {
                             int searchid = int.Parse(token.Substring(4));
-                            lines[i].pieces[j] = searchmarker(i, markertype.end, searchid, 1).ToString();
+                            token = searchmarker(i, markertype.end, searchid, 1).ToString();
                         }
-                        else if (token.StartsWith("@U"))
+                        else if (token.StartsWith("@u"))
                         {
                             int uniquelocation = uniquemarkers[token.Substring(2)];
-                            lines[i].pieces[j] = uniquelocation.ToString();
+                            token = uniquelocation.ToString();
                         }
+                        if (numappendix)
+                            token = "I" + token;
+                        lines[i].pieces[j] = token;
                     }
                     else if (token.StartsWith("-") || token.StartsWith("+") || char.IsDigit(token[0]))
                     {
@@ -816,66 +869,8 @@ namespace fazfucku
         #endregion
         //replace longer function names
         #region he shortening
-        public Dictionary<string, string> shorthand = new Dictionary<string, string>
-        {
-            /*{ "print", "pr" },
-            { "release", "rel" },
-            { "goto", "go" },
-            { "conddontgoto", "cdg" },
-            { "condsplitgoto", "csg" },
-            { "conddogoto", "cdog" },
-            { "comp", "c" },
-            { "set", "s" },
-            { "undef", "ud" },
-            { "fstk_add", "fa" },
-            { "fstk_discard", "fd" },
-            { "fstk_popgoto", "fg" },
-            { "fstk_pop", "fp" },
-            { "to_string", "tstr" },
-            { "parse", "prs" },
-            { "string_replace", "str_rep" },
-            { "string_lower", "str_lw" },
-            { "string_upper", "str_up" },
-            { "string_substring", "str_sub" },
-            { "string_split", "str_spl" },
-            { "string_join", "str_joe" },
-            { "string_length", "str_len" },
-            { "list_create", "l_cr" },
-            { "list_addtop", "l_at" },
-            { "list_addat", "l_aa" },
-            { "list_set", "l_s" },
-            { "list_get", "l_g" },
-            { "list_amount", "l_am" },
-            { "list_removefirst", "l_rf" },
-            { "list_removeat", "l_ra" },
-            { "list_removeallof", "l_rl" },
-            { "list_clear", "l_cl" },
-            { "list_indexof", "l_i" },
-            { "list_has", "l_h" }*/
-        };
-        public Dictionary<string, string[]> mathfunc = new Dictionary<string, string[]>
-        {
-            /*{ "round", new string[] { "m2", "rn" } },
-            { "floor", new string[] { "m2", "fl" } },
-            { "flr", new string[] { "m2", "fl" } },
-            { "ceiling", new string[] { "m2", "cl" } },
-            { "ceil", new string[] { "m2", "cl" } },
-            { "sin", new string[] { "mt", "s" } },
-            { "cos", new string[] { "mt", "c" } },
-            { "tan", new string[] { "mt", "t" } },
-            { "asin", new string[] { "mt", "as" } },
-            { "acos", new string[] { "mt", "ac" } },
-            { "atan", new string[] { "mt", "at" } },
-            { "sign", new string[] { "m1", "s" } },
-            { "max", new string[] { "mx", "mx" } },
-            { "min", new string[] { "mx", "mn" } },
-            { "axb", new string[] { "m3", "lf" } },
-            { "sqrt", new string[] { "m1", "sq" } },
-            { "√", new string[] { "m1", "sq" } },
-            { "cadd", new string[] { "mx", "c+" } },
-            { "cmul", new string[] { "mx", "c×" } },
-            { "sqradd", new string[] { "mx", "sa" } }*/
-        };
+        public Dictionary<string, string> shorthand = new Dictionary<string, string>();
+        public Dictionary<string, string[]> mathfunc = new Dictionary<string, string[]>();
         void makeshort()
         {
             for (int i = 0; i < lines.Count; i++)
@@ -907,7 +902,7 @@ namespace fazfucku
             return thebuilder.ToString().TrimEnd('\n').TrimEnd('\r');
         }
     }
-    enum linetype { math, mathdirect, boel, booldirect, function, functionset, standalone, boolfunction, set, definationfunc, broken, theresNOTHING, boolfunctionnargumentset, fazfuck, boolfunctionwarg, blockfunc }
+    enum linetype { math, mathdirect, boel, booldirect, function, functionset, standalone, boolfunction, set, definationfunc, broken, theresNOTHING, boolfunctionnargumentset, fazfuck, boolfunctionwarg, blockfunc, markerlabel }
     class lineinfo
     {
         public List<string> pieces = new List<string>();
@@ -950,10 +945,5 @@ namespace fazfucku
         {
             return tipe.ToString() + markerid.ToString();
         }
-    }
-    class funcdef
-    {
-        public int parametercount;
-        public bool inline = false;
     }
 }

@@ -27,15 +27,11 @@ namespace fazfucku
                         break;
                     case "runsingle":
                         if (filelocation == string.Empty)
-                        {
-                            funnywindowssound(soundeffect.error);
                             Console.WriteLine("no file location set!");
-                        }
+                        else if (!filelocation.EndsWith(".fzas"))
+                            Console.WriteLine(filelocation + " isn't a fazass file!");
                         else if (!File.Exists(filelocation))
-                        {
-                            funnywindowssound(soundeffect.error);
                             Console.WriteLine(filelocation + " doesn't exist!");
-                        }
                         else
                         {
                             fazassrunner myassisblicky = new fazassrunner();
@@ -50,15 +46,30 @@ namespace fazfucku
                                         case "ruwd":
                                             myassisblicky.debug_runline = true;
                                             break;
+                                        default:
+                                            Console.WriteLine(input[i] + " is not a valid run setting!");
+                                            break;
                                     }
                                 }
                             }
-                            myassisblicky.run();
+                            try
+                            {
+                                myassisblicky.run();
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e.ToString());
+                                funnywindowssound(soundeffect.bigerrorbro);
+                            }
+                            break;
                         }
+                        funnywindowssound(soundeffect.error);
                         break;
                     case "compile":
                         if (filelocation == string.Empty)
                             Console.WriteLine("no file location set!");
+                        else if (!filelocation.EndsWith(".fzfk"))
+                            Console.WriteLine(filelocation + " isn't a fazfuck file!");
                         else if (!File.Exists(filelocation))
                             Console.WriteLine(filelocation + " doesn't exist!");
                         else
@@ -83,6 +94,13 @@ namespace fazfucku
                                             break;
                                         case "listcompileinfostuff":
                                             listcompileinfostuff = true;
+                                            break;
+                                        case "nofunctions":
+                                        case "nofunc":
+                                            compilah.nofunctions = true;
+                                            break;
+                                        default:
+                                            Console.WriteLine(input[i] + " is not a valid compile setting!");
                                             break;
                                     }
                                 }
@@ -166,8 +184,10 @@ namespace fazfucku
                             }
                             else
                                 Console.WriteLine("compiled file was empty!!");
+                            funnywindowssound(soundeffect.bigerrorbro);
+                            break;
                         }
-                        funnywindowssound(soundeffect.bigerrorbro);
+                        funnywindowssound(soundeffect.error);
                         break;
                     case "compileinfo":
                         try

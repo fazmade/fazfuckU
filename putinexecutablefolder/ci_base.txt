@@ -71,9 +71,12 @@ control gotoes
 restart goto @start
 next goto @next
 end goto @end
+go2 goto @u
 restart_unless conddontgoto @start
 next_unless conddontgoto @next
 end_unless conddontgoto @end
+go2_unless conddontgoto @u
 restart_if conddogoto @start
 next_if conddogoto @next
 end_if conddogoto @end
+go2_if conddogoto @u

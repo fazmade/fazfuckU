@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+//using System.IO;
+//using System.Linq;
 
 namespace fazfucku
 {
@@ -311,26 +311,31 @@ namespace fazfucku
                             globaldict.Remove(line[1]);
                         break;
                     case "fa": //funcstack_add
+                        funcstack.Capacity += line.Length-1;
                         for (int i = 1; i < line.Length; i++)
                         {
-                            funcstack.Insert(0, getvar(line[i]));
+                            funcstack.Add(getvar(line[i]));
                         }
                         break;
                     case "fd": //funcstack_discard
-                        funcstack.RemoveRange(0, int.Parse(line[1]));
+                        int discardamount = int.Parse(line[1]);
+                        funcstack.RemoveRange(funcstack.Count - discardamount, discardamount);
+                        funcstack.TrimExcess();
                         break;
                     case "fg": //funcstack_popgoto
                         {
-                            int jumbojosh = (int)funcstack[0];
-                            funcstack.RemoveAt(0);
+                            int jumbojosh = (int)funcstack[funcstack.Count - 1];
+                            funcstack.RemoveAt(funcstack.Count - 1);
+                            funcstack.TrimExcess();
                             return jumbojosh;
                         }
                     case "fp": //funcstack_pop
                         for (int i = 1; i < line.Length; i++)
                         {
-                            setvar(line[i], funcstack[0]);
-                            funcstack.RemoveAt(0);
+                            setvar(line[i], funcstack[funcstack.Count - 1]);
+                            funcstack.RemoveAt(funcstack.Count - 1);
                         }
+                        funcstack.TrimExcess();
                         break;
                     case "tstr": //to_string
                         {
@@ -457,7 +462,7 @@ namespace fazfucku
                 return;
             }
             char firstchar = identifier[0];
-            if (firstchar == '\"' || firstchar == '#')
+            if (firstchar == '\"' || firstchar == '#' || firstchar == 'I')
             {
                 doerror(identifier + " is a constant value!");
                 return;
@@ -481,7 +486,7 @@ namespace fazfucku
                 return;
             if (identifier.StartsWith("S"))
             {
-                funcstack[int.Parse(identifier.Substring(1))] = value;
+                funcstack[funcstack.Count - int.Parse(identifier.Substring(1)) - 1] = value;
                 return;
             }
             if (globaldict.ContainsKey(identifier))
@@ -513,6 +518,8 @@ namespace fazfucku
                 return identifier.Substring(1);
             if (firstchar == '#')
                 return float.Parse(identifier.Substring(1).Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture);
+            if (firstchar == 'I')
+                return int.Parse(identifier.Substring(1));
             if (firstchar == '!')
                 return !(bool)getvar(identifier.Substring(1));
             if (firstchar == '-')
@@ -522,9 +529,10 @@ namespace fazfucku
             if (identifier == "B")
                 return blankvar;
             if (identifier.StartsWith("S"))
-                return funcstack[int.Parse(identifier.Substring(1))];
+                return funcstack[funcstack.Count - int.Parse(identifier.Substring(1)) - 1];
             if (globaldict.ContainsKey(identifier))
                 return globaldict[identifier];
+            doerror("variable " + identifier + " is undefined!");
             return null;
         }
         private void doerror(string err, int linenumber = -8008135)
