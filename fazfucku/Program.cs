@@ -1,17 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Media;
+using System.Text;
 
 namespace fazfucku
 {
     internal class Program
     {
         static string filelocation;
-        static List<string> compileinfoes = new List<string> { "base" };
+        static List<string> compileinfoes = new List<string>();
         static bool soundic = true;
         static void Main(string[] args)
         {
+            foreach (string lijn in File.ReadAllLines(Path.Combine(Directory.GetCurrentDirectory(), "options.txt")))
+            {
+                string[] lijnbutseperated = lijn.Split(' ');
+                switch (lijnbutseperated[0])
+                {
+                    case "sound":
+                        soundic = lijnbutseperated[1] == "on";
+                        break;
+                    case "compileinfoes":
+                        for (int i = 1; i < lijnbutseperated.Length; i++)
+                            compileinfoes.Add(lijnbutseperated[i]);
+                        break;
+                }
+            }
             bool gobromytoelo = true;
             while (gobromytoelo)
             {
@@ -249,6 +265,16 @@ namespace fazfucku
                             Console.WriteLine("sound on");
                         else
                             Console.WriteLine("sound off");
+                        break;
+                    case "saveoptions":
+                        StringBuilder optionsbuild = new StringBuilder();
+                        if (soundic)
+                            optionsbuild.AppendLine("sound on");
+                        else
+                            optionsbuild.AppendLine("sound off");
+                        optionsbuild.Append("compileinfoes " + string.Join(" ", compileinfoes));
+                        File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "options.txt"), optionsbuild.ToString());
+                        Console.WriteLine("saved options");
                         break;
                     default:
                         if (File.Exists(input[0]))
