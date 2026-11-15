@@ -1,5 +1,5 @@
 flags
-supports_arbitrary_parameter_counts supports_lists
+fstk_popremoveafterset
 
 function shorthands
 console_getline cons_gtline

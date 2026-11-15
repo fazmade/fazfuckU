@@ -13,6 +13,8 @@ namespace fazfucku
         public bool includemarkers;
         public int prematureoutput = -1;
         public bool nofunctions;
+        public bool info_fstk_popremoveafterset;
+        public bool info_arbitrarysize;
         public string compile()
         {
             try
@@ -665,11 +667,26 @@ namespace fazfucku
                 }
                 else
                 {
-                    for (int j = 0; j < lines[i].pieces.Count; j++)
+                    int watchoutitschanging = 0;
+                    if (lines[i].pieces[0] == "fstk_discard")
+                        variablestack.RemoveRange(0, int.Parse(lines[i].pieces[1]));
+                    if (lines[i].pieces[0] == "fstk_add")
+                        watchoutitschanging = 1;
+                    else if (lines[i].pieces[0] == "fstk_pop")
+                        watchoutitschanging = 2;
+                    for (int j = 1; j < lines[i].pieces.Count; j++)
                     {
+                        if (watchoutitschanging == 2 && !info_fstk_popremoveafterset)
+                            variablestack.RemoveAt(0);
+
                         int pindex = variablestack.IndexOf(lines[i].pieces[j]);
                         if (pindex != -1)
                             lines[i].pieces[j] = "S" + pindex;
+
+                        if (watchoutitschanging == 1)
+                            variablestack.Insert(0, "i'm a placeholder!");
+                        else if (watchoutitschanging == 2 && info_fstk_popremoveafterset)
+                            variablestack.RemoveAt(0);
                     }
                 }
             }

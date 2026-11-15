@@ -16,6 +16,7 @@ namespace fazfucku
         private List<object> funcstack = new List<object>();
         private bool blankvar;
         public bool debug_runline = false;
+        public bool debug_typecheck = false;
         private float mathhalfrot = (float)Math.PI;
         public void loadprogram(string[] prog)
         {
@@ -188,6 +189,10 @@ namespace fazfucku
                         break;
                     case "m1": //math 1
                         {
+                            if (debug_typecheck)
+                            {
+                                debugline(getvar(line[3]).GetType().FullName);
+                            }
                             float result = float.NaN;
                             float num1 = (float)getvar(line[3]);
                             switch (line[2])
@@ -209,6 +214,11 @@ namespace fazfucku
                         break;
                     case "m2": //math 2
                         {
+                            if (debug_typecheck)
+                            {
+                                debugline(getvar(line[3]).GetType().FullName);
+                                debugline(getvar(line[4]).GetType().FullName);
+                            }
                             float result = float.NaN;
                             float num1 = (float)getvar(line[3]);
                             float num2 = (float)getvar(line[4]);
@@ -262,6 +272,12 @@ namespace fazfucku
                         break;
                     case "m3": //math 3
                         {
+                            if (debug_typecheck)
+                            {
+                                debugline(getvar(line[3]).GetType().FullName);
+                                debugline(getvar(line[4]).GetType().FullName);
+                                debugline(getvar(line[5]).GetType().FullName);
+                            }
                             float result = float.NaN;
                             float num1 = (float)getvar(line[3]);
                             float num2 = (float)getvar(line[4]);
@@ -277,6 +293,10 @@ namespace fazfucku
                         break;
                     case "mt": //math trig
                         {
+                            if (debug_typecheck)
+                            {
+                                debugline(getvar(line[3]).GetType().FullName);
+                            }
                             float result = float.NaN;
                             float num = (float)getvar(line[3]) * (float)Math.PI / mathhalfrot;
                             switch (line[2])
@@ -314,6 +334,8 @@ namespace fazfucku
                         funcstack.Capacity += line.Length-1;
                         for (int i = 1; i < line.Length; i++)
                         {
+                            if (debug_typecheck)
+                                debugline(getvar(line[i]).GetType().FullName);
                             funcstack.Add(getvar(line[i]));
                         }
                         break;
@@ -437,9 +459,15 @@ namespace fazfucku
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine("---globaldict");
                         foreach (KeyValuePair<string, object> entry in globaldict)
-                            Console.WriteLine(entry.Key + " : " + entry.Value.ToString());
+                            Console.WriteLine(entry.Key + " : " + entry.Value.ToString() + " : " + entry.Value.GetType().FullName);
                         Console.WriteLine("---funcstack");
-                        Console.WriteLine(string.Join("|", funcstack));
+                        foreach (object entry in funcstack)
+                        {
+                            if (entry == null)
+                                Console.WriteLine("NUTHING");
+                            else
+                                Console.WriteLine(entry.ToString() + " : " + entry.GetType().FullName);
+                        }
                         Console.WriteLine("---other");
                         Console.WriteLine("blankvar: " + blankvar);
                         Console.WriteLine("mathhalfrot: " + mathhalfrot);

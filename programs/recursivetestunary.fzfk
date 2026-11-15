@@ -1,0 +1,21 @@
+printunary(3)
+printunary(5)
+printunary(10)
+release
+
+func printunary(n)
+{
+	result = "" This isn't used anywhere else except this function so in this case a global variable is FINE!
+	incrementunary[result](n)
+	print(result)
+	return
+}
+func incrementunary[thetext](n)
+{
+	if ⟨n == 0⟩
+		return
+	thetext=string_join(thetext,"|")
+	(n-1)
+	incrementunary[thetext](n)
+	return
+}

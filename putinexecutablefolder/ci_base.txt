@@ -1,5 +1,3 @@
-flags
-
 function shorthands
 print pr
 release rel

@@ -1,2 +1,2 @@
 sound on
-compileinfoes base console
+compileinfoes base base_lists console

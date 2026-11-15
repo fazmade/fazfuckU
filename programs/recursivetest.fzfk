@@ -1,0 +1,17 @@
+value=sumupboi(3,0)
+print(value)
+value=sumupboi(5,0)
+print(value)
+release
+func sumupboi[res](num, temp)
+{
+	if ⟨num = 0⟩
+	{
+		res = num
+		return
+	}
+	temp = (num - 1)
+	res=sumupboi(temp, 0)
+	(res+num)
+	return
+}

@@ -62,6 +62,10 @@ namespace fazfucku
                                         case "ruwd":
                                             myassisblicky.debug_runline = true;
                                             break;
+                                        case "typecheck":
+                                        case "tch":
+                                            myassisblicky.debug_typecheck = true;
+                                            break;
                                         default:
                                             Console.WriteLine(input[i] + " is not a valid run setting!");
                                             break;
@@ -143,6 +147,24 @@ namespace fazfucku
                                     {
                                         switch (section)
                                         {
+                                            case 0:
+                                                string[] flags = line.Split(' ');
+                                                foreach (string flag in flags)
+                                                {
+                                                    switch (flag)
+                                                    {
+                                                        case "fstk_popremovebeforeset":
+                                                            compilah.info_fstk_popremoveafterset = false;
+                                                            break;
+                                                        case "fstk_popremoveafterset":
+                                                            compilah.info_fstk_popremoveafterset = true;
+                                                            break;
+                                                        case "fstk_staticsize":
+                                                            compilah.info_arbitrarysize = false;
+                                                            break;
+                                                    }
+                                                }
+                                                break;
                                             case 2:
                                                 string[] iuweasfiosdugiusdhgdhsj = line.Split(' ');
                                                 compilah.shorthand.Add(iuweasfiosdugiusdhgdhsj[0], iuweasfiosdugiusdhgdhsj[1]);
@@ -275,6 +297,22 @@ namespace fazfucku
                         optionsbuild.Append("compileinfoes " + string.Join(" ", compileinfoes));
                         File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "options.txt"), optionsbuild.ToString());
                         Console.WriteLine("saved options");
+                        break;
+                    case "quickswap":
+                        if (filelocation.EndsWith(".fzfk"))
+                        {
+                            filelocation = Path.ChangeExtension(filelocation, "fzas");
+                            Console.WriteLine("switched to fzas");
+                        }
+                        else if (filelocation.EndsWith(".fzas"))
+                        {
+                            filelocation = Path.ChangeExtension(filelocation, "fzfk");
+                            Console.WriteLine("switched to fzfk");
+                        }
+                        else
+                        {
+                            Console.WriteLine("cannot quickswap from this file type!");
+                        }
                         break;
                     default:
                         if (File.Exists(input[0]))
