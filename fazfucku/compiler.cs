@@ -10,11 +10,12 @@ namespace fazfucku
     {
         public string[] inputfile;
         List<lineinfo> lines;
-        public bool includemarkers;
-        public int prematureoutput = -1;
+        public bool includemarkers = false;
+        public string prematureoutput = string.Empty;
         public bool nofunctions;
         public bool info_fstk_popremoveafterset;
         public bool info_arbitrarysize;
+        public bool includelinenumbers = true;
         public string compile()
         {
             try
@@ -22,18 +23,18 @@ namespace fazfucku
                 lines = new List<lineinfo>();
                 Console.WriteLine("compiler: initial lexer start");
                 initiallexer();
-                if (prematureoutput == 1)
-                    return outputfile(false);
+                if (prematureoutput == "1" || prematureoutput == "il")
+                    return outputfile();
 
                 Console.WriteLine("compiler: line detection start");
                 linedetector();
-                if (prematureoutput == 2)
-                    return outputfile(true);
+                if (prematureoutput == "2" || prematureoutput == "ld")
+                    return outputfile();
 
                 Console.WriteLine("compiler: main conversion start");
                 mainconversion();
-                if (prematureoutput == 3)
-                    return outputfile(true);
+                if (prematureoutput == "3" || prematureoutput == "mc")
+                    return outputfile();
 
                 if (nofunctions)
                     Console.WriteLine("compiler: skipping function stuff lol");
@@ -41,37 +42,37 @@ namespace fazfucku
                 {
                     Console.WriteLine("compiler: function stuff start");
                     functionstuff();
-                    if (prematureoutput == 4)
-                        return outputfile(true);
+                    if (prematureoutput == "4" || prematureoutput == "fs")
+                        return outputfile();
                 }
 
                 Console.WriteLine("compiler: convert control flow start");
                 gototime();
-                if (prematureoutput == 5)
-                    return outputfile(true);
+                if (prematureoutput == "5" || prematureoutput == "ccf")
+                    return outputfile();
 
                 Console.WriteLine("compiler: remove old control start");
                 removeoldcontrol();
-                if (prematureoutput == 6)
-                    return outputfile(true);
+                if (prematureoutput == "6" || prematureoutput == "roc")
+                    return outputfile();
 
                 Console.WriteLine("compiler: get unique marker locations start");
                 getuniquemarkerlocations();
-                if (prematureoutput == 7)
-                    return outputfile(true);
+                if (prematureoutput == "7" || prematureoutput == "guml")
+                    return outputfile();
 
                 Console.WriteLine("compiler: convert from dynamic start");
                 convertfromdynamic();
-                if (prematureoutput == 8)
-                    return outputfile(true);
+                if (prematureoutput == "8" || prematureoutput == "cfd")
+                    return outputfile();
 
                 Console.WriteLine("compiler: replace longer function names");
                 makeshort();
-                if (prematureoutput == 9)
-                    return outputfile(true);
+                if (prematureoutput == "9" || prematureoutput == "rlf")
+                    return outputfile();
 
                 Console.WriteLine("compiler: output file");
-                return outputfile(includemarkers);
+                return outputfile();
             }
             catch (Exception e)
             {
@@ -96,6 +97,7 @@ namespace fazfucku
             "section",
             "connection",
             "for",
+            "local"
         };
         //initial lexer
         #region initial lexer
@@ -361,6 +363,7 @@ namespace fazfucku
                             lines[i].pieces.AddRange(outvariables);
                             lines[i].pieces.Add("$@+2");
                             lines[i].pieces.AddRange(parameters);
+                            i++;
                         }
                         else
                         {
@@ -402,6 +405,7 @@ namespace fazfucku
                                 lines[i].pieces.AddRange(outvariables);
                                 lines[i].pieces.Add("$@+2");
                                 lines[i].pieces.AddRange(parameters);
+                                i++;
                             }
                             else
                             {
@@ -489,6 +493,9 @@ namespace fazfucku
                                 doerror("otherwise not supported yet ):");
                                 lines[i].pieces = new List<string> { "connection" };
                                 break;
+                            case "local":
+                                lines.Insert(i + 2, new lineinfo(lines[i].originallineid, linetype.fazfuck, parsecond(lines[i].pieces[2], "B")));
+                                break;
                         }
                         break;
                     case linetype.definationfunc:
@@ -498,6 +505,16 @@ namespace fazfucku
                         adduniquemarker(i, lines[i].pieces[1]);
                         removeline(i);
                         i--;
+                        break;
+                    case linetype.standalone:
+                        if (customfunctions.ContainsKey(lines[i].pieces[0]))
+                        {
+                            //adds goto
+                            lines.Insert(i + 1, new lineinfo(lines[i].originallineid, linetype.fazfuck, new List<string> { "goto", "@u" + lines[i].pieces[0] }));
+                            //convert to funcstack add line
+                            lines[i].pieces = new List<string> { "fstk_add", "$@+2" };
+                            i++;
+                        }
                         break;
                 }
             }
@@ -807,6 +824,11 @@ namespace fazfucku
                 for (int j = 0; j < lines[i].pieces.Count; j++)
                 {
                     string token = lines[i].pieces[j];
+                    if (token == string.Empty)
+                    {
+                        doerror("empty token at " + i);
+                        continue;
+                    }
                     if (token == "true")
                         lines[i].pieces[j] = "T";
                     else if (token == "false")
@@ -906,15 +928,16 @@ namespace fazfucku
         }
         #endregion
         //output
-        string outputfile(bool addmarkers)
+        string outputfile()
         {
             StringBuilder thebuilder = new StringBuilder();
             foreach (lineinfo lijn in lines)
             {
-                if (addmarkers && lijn.markers.Count > 0)
-                    thebuilder.AppendLine(string.Join("|", lijn.pieces) + "<" + string.Join("<", lijn.markers) + "|" + lijn.originallineid);
-                else
-                    thebuilder.AppendLine(string.Join("|", lijn.pieces) + "|" + lijn.originallineid);
+                thebuilder.Append(string.Join("|", lijn.pieces));
+                if (includemarkers && lijn.markers.Count > 0)
+                    thebuilder.Append(string.Join("<", lijn.markers));
+                thebuilder.Append("|" + (lijn.originallineid+1));
+                thebuilder.AppendLine();
             }
             return thebuilder.ToString().TrimEnd('\n').TrimEnd('\r');
         }

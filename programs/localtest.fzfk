@@ -1,0 +1,9 @@
+textone = cons_gtline
+local (localnovalue,localwithvaluewowe=textone)
+{
+	localnovalue = cons_gtline
+	localwithvaluewowe = string_upper(localwithvaluewowe)
+	print(localnovalue)
+	print(localwithvaluewowe)
+}
+release

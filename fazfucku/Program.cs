@@ -110,7 +110,7 @@ namespace fazfucku
                                         case "prematureoutput":
                                         case "pmo":
                                             i++;
-                                            compilah.prematureoutput = int.Parse(input[i]);
+                                            compilah.prematureoutput = input[i];
                                             break;
                                         case "listcompileinfostuff":
                                             listcompileinfostuff = true;
@@ -118,6 +118,10 @@ namespace fazfucku
                                         case "nofunctions":
                                         case "nofunc":
                                             compilah.nofunctions = true;
+                                            break;
+                                        case "nolinenum":
+                                        case "noln":
+                                            compilah.includelinenumbers = false;
                                             break;
                                         default:
                                             Console.WriteLine(input[i] + " is not a valid compile setting!");
@@ -127,62 +131,69 @@ namespace fazfucku
                             }
                             foreach (string compileinfo in compileinfoes)
                             {
-                                string[] infoed = File.ReadAllLines(getcompileinfopath(compileinfo));
-                                int section = 0;
-                                foreach (string line in infoed)
+                                try
                                 {
-                                    if (line == "flags")
-                                        section = 0;
-                                    //else if (line == "hooks")
-                                    //    section = 1;
-                                    else if (line == "function shorthands")
-                                        section = 2;
-                                    else if (line == "math functions")
-                                        section = 3;
-                                    else if (line == "special comparisons")
-                                        section = 4;
-                                    else if (line == "control gotoes")
-                                        section = 5;
-                                    else if (line != string.Empty)
+                                    string[] infoed = File.ReadAllLines(getcompileinfopath(compileinfo));
+                                    int section = 0;
+                                    foreach (string line in infoed)
                                     {
-                                        switch (section)
+                                        if (line == "flags")
+                                            section = 0;
+                                        //else if (line == "hooks")
+                                        //    section = 1;
+                                        else if (line == "function shorthands")
+                                            section = 2;
+                                        else if (line == "math functions")
+                                            section = 3;
+                                        else if (line == "special comparisons")
+                                            section = 4;
+                                        else if (line == "control gotoes")
+                                            section = 5;
+                                        else if (line != string.Empty)
                                         {
-                                            case 0:
-                                                string[] flags = line.Split(' ');
-                                                foreach (string flag in flags)
-                                                {
-                                                    switch (flag)
+                                            switch (section)
+                                            {
+                                                case 0:
+                                                    string[] flags = line.Split(' ');
+                                                    foreach (string flag in flags)
                                                     {
-                                                        case "fstk_popremovebeforeset":
-                                                            compilah.info_fstk_popremoveafterset = false;
-                                                            break;
-                                                        case "fstk_popremoveafterset":
-                                                            compilah.info_fstk_popremoveafterset = true;
-                                                            break;
-                                                        case "fstk_staticsize":
-                                                            compilah.info_arbitrarysize = false;
-                                                            break;
+                                                        switch (flag)
+                                                        {
+                                                            case "fstk_popremovebeforeset":
+                                                                compilah.info_fstk_popremoveafterset = false;
+                                                                break;
+                                                            case "fstk_popremoveafterset":
+                                                                compilah.info_fstk_popremoveafterset = true;
+                                                                break;
+                                                            case "fstk_staticsize":
+                                                                compilah.info_arbitrarysize = false;
+                                                                break;
+                                                        }
                                                     }
-                                                }
-                                                break;
-                                            case 2:
-                                                string[] iuweasfiosdugiusdhgdhsj = line.Split(' ');
-                                                compilah.shorthand.Add(iuweasfiosdugiusdhgdhsj[0], iuweasfiosdugiusdhgdhsj[1]);
-                                                break;
-                                            case 3:
-                                                string[] jsdfsadhfkhsadfkhalhfaksdj = line.Split(' ');
-                                                compilah.mathfunc.Add(jsdfsadhfkhsadfkhalhfaksdj[0], new string[] { jsdfsadhfkhsadfkhalhfaksdj[1], jsdfsadhfkhsadfkhalhfaksdj[2] });
-                                                break;
-                                            case 4:
-                                                string[] djfsdajfkldsajfkldjksjdf = line.Split(' ');
-                                                compilah.specialcomparisons.Add(djfsdajfkldsajfkldjksjdf[0], djfsdajfkldsajfkldjksjdf[1]);
-                                                break;
-                                            case 5:
-                                                string[] shfjkhsdkjghksdjhgkjd = line.Split(' ');
-                                                compilah.controlgotoes.Add(shfjkhsdkjghksdjhgkjd[0], new string[] { shfjkhsdkjghksdjhgkjd[1], shfjkhsdkjghksdjhgkjd[2] });
-                                                break;
+                                                    break;
+                                                case 2:
+                                                    string[] iuweasfiosdugiusdhgdhsj = line.Split(' ');
+                                                    compilah.shorthand.Add(iuweasfiosdugiusdhgdhsj[0], iuweasfiosdugiusdhgdhsj[1]);
+                                                    break;
+                                                case 3:
+                                                    string[] jsdfsadhfkhsadfkhalhfaksdj = line.Split(' ');
+                                                    compilah.mathfunc.Add(jsdfsadhfkhsadfkhalhfaksdj[0], new string[] { jsdfsadhfkhsadfkhalhfaksdj[1], jsdfsadhfkhsadfkhalhfaksdj[2] });
+                                                    break;
+                                                case 4:
+                                                    string[] djfsdajfkldsajfkldjksjdf = line.Split(' ');
+                                                    compilah.specialcomparisons.Add(djfsdajfkldsajfkldjksjdf[0], djfsdajfkldsajfkldjksjdf[1]);
+                                                    break;
+                                                case 5:
+                                                    string[] shfjkhsdkjghksdjhgkjd = line.Split(' ');
+                                                    compilah.controlgotoes.Add(shfjkhsdkjghksdjhgkjd[0], new string[] { shfjkhsdkjghksdjhgkjd[1], shfjkhsdkjghksdjhgkjd[2] });
+                                                    break;
+                                            }
                                         }
                                     }
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(e.ToString());
                                 }
                             }
                             if (listcompileinfostuff)

@@ -21,18 +21,6 @@ string_substring str_sub
 string_split str_spl
 string_join str_joe
 string_length str_len
-list_create l_cr
-list_addtop l_at
-list_addat l_aa
-list_set l_s
-list_get l_g
-list_amount l_am
-list_removefirst l_rf
-list_removeat l_ra
-list_removeallof l_rl
-list_clear l_cl
-list_indexof l_i
-list_has l_h
 hook_define h_d
 
 math functions

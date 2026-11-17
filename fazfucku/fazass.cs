@@ -495,7 +495,7 @@ namespace fazfucku
                 doerror(identifier + " is a constant value!");
                 return;
             }
-            if (firstchar == '-' || firstchar == '+' || firstchar == '+')
+            if (firstchar == '-' || firstchar == '+' || firstchar == '!')
             {
                 doerror(identifier + " cannot set a variable with a modifier!");
                 return;

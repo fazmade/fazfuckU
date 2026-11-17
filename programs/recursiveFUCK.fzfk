@@ -1,0 +1,19 @@
+print("THIS SHOULD BE FUCKING 6")
+repeats = 10
+val = 66
+pissoff[val](6)
+print(val)
+print("25!!!1 not the one it's should be 25")
+repeats = 3
+val = 100
+pissoff[val](25)
+print(val)
+release
+
+func pissoff[outie](fuq u)
+{
+	if (repeats = 0)
+		return
+	(outie - fuq u)
+	return
+}
