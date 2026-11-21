@@ -224,6 +224,7 @@ namespace fazfucku
                     case lextype.logicalic:
                         if (curchar == '⟩')
                         {
+                            workingtoken = workingtoken.Trim();
                             poptoken();
                             workingtoken = "⟩";
                             poptoken();
@@ -518,6 +519,7 @@ namespace fazfucku
                 }
             }
         }
+        public List<char> mathoperators = new List<char>();
         void parsemath(string toparse, out string num1, out string oper, out string num2)
         {
             List<string> peepees = new List<string>();
@@ -525,7 +527,7 @@ namespace fazfucku
             for (int i = 0; i < toparse.Length; i++)
             {
                 char curchar = toparse[i];
-                if (curchar == '+' || curchar == '-' || curchar == '×' || curchar == '÷' || curchar == '%' || curchar == '^' || curchar == '_')
+                if (mathoperators.Contains(curchar))
                 {
                     peepees.Add(curp);
                     peepees.Add(curchar.ToString());
@@ -572,8 +574,15 @@ namespace fazfucku
                 num2 = peepees[1];
         }
         public Dictionary<string, string> specialcomparisons = new Dictionary<string, string>();
+        public List<char> singlecomparisons = new List<char>();
         List<string> parsecond(string toparse, string outputvar)
         {
+            if (singlecomparisons.Contains(toparse[0]))
+            {
+                if (outputvar == string.Empty)
+                    outputvar = "B";
+                return new List<string> { "comp1", outputvar, toparse[0].ToString(), toparse.Substring(1).Replace(" ", "") };
+            }
             if (toparse.Contains(" "))
             {
                 string[] splitty = toparse.Split(' ');
@@ -612,7 +621,7 @@ namespace fazfucku
             for (int i = 0; i < toparse.Length; i++)
             {
                 char curchar = toparse[i];
-                if (curchar == '=' || curchar == '≠' || curchar == '<' || curchar == '>' || curchar == '≤' || curchar == '≥' || curchar == '&' || curchar == '|')
+                if (singlecomparisons.Contains(curchar))
                 {
                     isalisteventhebestchoiceforthis.Add(workne);
                     isalisteventhebestchoiceforthis.Add(curchar.ToString());
@@ -922,7 +931,12 @@ namespace fazfucku
             {
                 string functio = lines[i].pieces[0];
                 if (functio == "math")
-                    lines[i].pieces[0] = "m" + (lines[i].pieces.Count - 3);
+                {
+                    if (lines[i].pieces.Count == 5)
+                        lines[i].pieces[0] = "m";
+                    else
+                        lines[i].pieces[0] = "m" + (lines[i].pieces.Count - 3);
+                }
                 else if (mathfunc.ContainsKey(functio))
                 {
                     lines[i].pieces[0] = mathfunc[functio][0];

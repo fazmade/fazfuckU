@@ -6,6 +6,7 @@ conddontgoto cdg
 condsplitgoto csg
 conddogoto cdog
 comp c
+comp1 c1
 set s
 undef ud
 fstk_add fa
@@ -25,11 +26,11 @@ string_length str_len
 hook_define h_d
 
 math functions
-round m2 rn
-floor m2 fl
-flr m2 fl
-ceiling m2 cl
-ceil m2 cl
+round m rn
+floor m fl
+flr m fl
+ceiling m cl
+ceil m cl
 sin mt s
 cos mt c
 tan mt t
@@ -67,3 +68,9 @@ restart_if conddogoto @start
 next_if conddogoto @next
 end_if conddogoto @end
 go2_if conddogoto @u
+
+single comparisons
+=≠<>≤≥&|∃∄
+
+math operators
++-×÷%^_±

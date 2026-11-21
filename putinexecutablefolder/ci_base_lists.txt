@@ -11,3 +11,6 @@ list_removeallof l_rl
 list_clear l_cl
 list_indexof l_i
 list_has l_h
+
+single comparisons
+∈∉

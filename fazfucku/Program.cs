@@ -155,6 +155,10 @@ namespace fazfucku
                                             section = 4;
                                         else if (line == "control gotoes")
                                             section = 5;
+                                        else if (line == "single comparisons")
+                                            section = 6;
+                                        else if (line == "math operators")
+                                            section = 7;
                                         else if (line != string.Empty)
                                         {
                                             switch (section)
@@ -192,6 +196,12 @@ namespace fazfucku
                                                 case 5:
                                                     string[] shfjkhsdkjghksdjhgkjd = line.Split(' ');
                                                     compilah.controlgotoes.Add(shfjkhsdkjghksdjhgkjd[0], new string[] { shfjkhsdkjghksdjhgkjd[1], shfjkhsdkjghksdjhgkjd[2] });
+                                                    break;
+                                                case 6:
+                                                    compilah.singlecomparisons.AddRange(line.ToCharArray());
+                                                    break;
+                                                case 7:
+                                                    compilah.mathoperators.AddRange(line.ToCharArray());
                                                     break;
                                             }
                                         }
@@ -345,6 +355,14 @@ namespace fazfucku
                             dafile = dafile.Replace("=>", "≥");
                             dafile = dafile.Replace("<<", "«");
                             dafile = dafile.Replace(">>", "»");
+                            dafile = dafile.Replace("*x", "×");
+                            dafile = dafile.Replace("-/", "÷");
+                            dafile = dafile.Replace("+_+_", "±");
+                            dafile = dafile.Replace("((E", "∈");
+                            dafile = dafile.Replace("((/E", "∉");
+                            dafile = dafile.Replace("E]]", "∃");
+                            dafile = dafile.Replace("E/]]", "∄");
+                            dafile = dafile.Replace(">->", "→");
                             File.WriteAllText(filelocation, dafile);
                         }
                         else

@@ -88,6 +88,22 @@ namespace fazfucku
                                 setvar(line[1], getvar(line[index + 4]));
                         }
                         break;
+                    case "c1":
+                        {
+                            bool result = false;
+                            //object obj1 = getvar(line[2]);
+                            switch (line[2])
+                            {
+                                case "∃":
+                                    result = ismodifyablevariable(line[3]);
+                                    break;
+                                case "∄":
+                                    result = !ismodifyablevariable(line[3]);
+                                    break;
+                            }
+                            setvar(line[1], result);
+                        }
+                        break;
                     case "c":
                         {
                             bool result = false;
@@ -136,6 +152,18 @@ namespace fazfucku
                                     break;
                                 case "!e":
                                     result = !((string)obj1).EndsWith((string)obj2);
+                                    break;
+                                case "∈":
+                                    {
+                                        Predicate<object> objectlistcontains = thingus => thingus.Equals(obj2);
+                                        result = ((List<object>)obj1).Exists(objectlistcontains);
+                                    }
+                                    break;
+                                case "∉":
+                                    {
+                                        Predicate<object> objectlistcontains = thingus => thingus.Equals(obj2);
+                                        result = !((List<object>)obj1).Exists(objectlistcontains);
+                                    }
                                     break;
                             }
                             setvar(line[1], result);
@@ -212,7 +240,7 @@ namespace fazfucku
                             setvar(line[1], result);
                         }
                         break;
-                    case "m2": //math 2
+                    case "m": //math 2
                         {
                             if (debug_typecheck)
                             {
@@ -265,6 +293,11 @@ namespace fazfucku
                                     break;
                                 case "_": //log
                                     result = (float)Math.Log(num1, num2);
+                                    break;
+                                case "±": //diff
+                                    result = num1 - num2;
+                                    if (result < 0)
+                                        result = -result;
                                     break;
                             }
                             setvar(line[1], result);
@@ -487,7 +520,7 @@ namespace fazfucku
         }
         private void setvar(string identifier, object value)
         {
-            if (identifier == "T" || identifier == "F" || identifier == "NUT")
+            if (identifier == "T" || identifier == "F" || identifier == "NUT" || identifier == "π" || identifier == "∞" || identifier == "ω")
             {
                 doerror(identifier + " is a constant value!");
                 return;
@@ -527,6 +560,23 @@ namespace fazfucku
             }
             globaldict.Add(identifier, value);
         }
+        private bool ismodifyablevariable(string identifier)
+        {
+            if (identifier == "T" || identifier == "F" || identifier == "NUT" || identifier == "π" || identifier == "∞" || identifier == "ω")
+                return false;
+            char firstchar = identifier[0];
+            if (firstchar == '\"' || firstchar == '#' || firstchar == 'I')
+                return false;
+            if (firstchar == '-' || firstchar == '+' || firstchar == '!')
+                return ismodifyablevariable(identifier.Substring(1));
+            if (identifier == "B" || identifier == "mathhalfrot")
+                return true;
+            if (identifier == "_")
+                return false;
+            if (identifier.StartsWith("S"))
+                return funcstack.Count > int.Parse(identifier.Substring(1));
+            return globaldict.ContainsKey(identifier);
+        }
         private object getvar(string identifier)
         {
             if (identifier == "NUT")
@@ -537,6 +587,14 @@ namespace fazfucku
                 return false;
             if (identifier == "π")
                 return (float)Math.PI;
+            if (identifier == "∞")
+                return float.PositiveInfinity;
+            if (identifier == "-∞")
+                return float.NegativeInfinity;
+            if (identifier == "ω")
+                return float.MaxValue;
+            if (identifier == "-ω")
+                return float.MinValue;
             if (identifier == "mathfalfrot")
                 return mathhalfrot;
             if (identifier == "_")

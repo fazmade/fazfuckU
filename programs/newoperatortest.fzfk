@@ -1,0 +1,14 @@
+v = (10 ± 5)
+print(v)
+v = (5 ± 10)
+print(v)
+v = ⟨∃freakin epic⟩
+print(v)
+v = ⟨∄freakin epic⟩
+print(v)
+freakin epic = «SOMETHING»
+v = ⟨∃freakin epic⟩
+print(v)
+v = ⟨∄freakin epic⟩
+print(v)
+release
