@@ -4,6 +4,9 @@ fazfuck... U!! and fazassembly!!
 fazfuckU + fazass are two programming languages that combine to make fazfuck but better!  
 fazfuckU is a language that's intended to be more like a normal programming language, with if statements and functions and all the stuff they have. it then gets compiled (transpiled) into fazass, a bytecode-like language with simple functions so a developer can easily write an interpreter for it.
 
+# how
+uhh you get the repository and compile it from visual studio cuz that's what i do. also there's a github wiki you can look at
+
 # why
 usually, programming languages are designed with this order of least work to most work:  
 [end user] < [developer] (≈ [language/compiler creator])  
