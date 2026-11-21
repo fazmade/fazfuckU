@@ -479,6 +479,7 @@ namespace fazfucku
 
                     //COMSOEL?!
                     case "cons_gtline":
+                        Console.Write((string)getvar(line[2]));
                         setvar(line[1], Console.ReadLine());
                         break;
                     case "cons_cheesc":

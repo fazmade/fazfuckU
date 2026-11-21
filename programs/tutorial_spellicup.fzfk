@@ -1,0 +1,9 @@
+print("spell ICUP")
+input = console_getline("spell: ")
+while ⟨input ≠ "ICUP"⟩
+{
+	print("WRONG.")
+	input = console_getline("spell: ")
+}
+print("you did it!")
+release
