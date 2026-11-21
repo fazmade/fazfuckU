@@ -345,6 +345,7 @@ namespace fazfucku
                             dafile = dafile.Replace("=>", "≥");
                             dafile = dafile.Replace("<<", "«");
                             dafile = dafile.Replace(">>", "»");
+                            File.WriteAllText(filelocation, dafile);
                         }
                         else
                         {

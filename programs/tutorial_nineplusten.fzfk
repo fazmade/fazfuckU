@@ -1,0 +1,14 @@
+print("what's 9 + 10?")
+a = 9
+b = 10
+answer = (a + b)
+print(answer)
+if ⟨answer = 19⟩
+{
+	print("u smart!")
+}
+else
+{
+	print("u stupid!")
+}
+release

@@ -374,6 +374,9 @@ namespace fazfucku
                     case "prs": //parse
                         setvar(line[1], getvar((string)getvar(line[2]))); //aha yes.
                         break;
+                    case "psn": //parsen
+                        setvar(line[1], float.Parse(((string)getvar(line[2])).Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture)); //aha yes.
+                        break;
                     case "str_rep": //string_replace
                         setvar(line[1], ((string)getvar(line[2])).Replace((string)getvar(line[3]), (string)getvar(line[4])) );
                         break;
