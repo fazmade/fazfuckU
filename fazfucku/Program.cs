@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+//using System.Linq;
 using System.Media;
 using System.Text;
 
@@ -12,6 +12,7 @@ namespace fazfucku
         static string filelocation;
         static List<string> compileinfoes = new List<string>();
         static bool soundic = true;
+        static float busydelay = 0f;
         static void Main(string[] args)
         {
             foreach (string lijn in File.ReadAllLines(Path.Combine(Directory.GetCurrentDirectory(), "options.txt")))
@@ -26,8 +27,12 @@ namespace fazfucku
                         for (int i = 1; i < lijnbutseperated.Length; i++)
                             compileinfoes.Add(lijnbutseperated[i]);
                         break;
+                    case "busydelay":
+                        busydelay = fuckingparsefloatass(lijnbutseperated[1]);
+                        break;
                 }
             }
+            Console.Title = "da official fafuckU compiler and fazass console runner!";
             bool gobromytoelo = true;
             while (gobromytoelo)
             {
@@ -96,6 +101,7 @@ namespace fazfucku
                         {
                             fazfuckucompiler compilah = new fazfuckucompiler();
                             compilah.inputfile = File.ReadAllLines(filelocation);
+                            compilah.busydelay = busydelay;
                             bool listcompileinfostuff = false;
                             if (input.Length > 1)
                             {
@@ -305,11 +311,13 @@ namespace fazfucku
                             optionsbuild.AppendLine("sound on");
                         else
                             optionsbuild.AppendLine("sound off");
-                        optionsbuild.Append("compileinfoes " + string.Join(" ", compileinfoes));
+                        optionsbuild.AppendLine("compileinfoes " + string.Join(" ", compileinfoes));
+                        optionsbuild.Append("busydelay " + busydelay.ToString().Replace(',','.'));
                         File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "options.txt"), optionsbuild.ToString());
                         Console.WriteLine("saved options");
                         break;
                     case "quickswap":
+                    case "qs":
                         if (filelocation.EndsWith(".fzfk"))
                         {
                             filelocation = Path.ChangeExtension(filelocation, "fzas");
@@ -324,6 +332,103 @@ namespace fazfucku
                         {
                             Console.WriteLine("cannot quickswap from this file type!");
                         }
+                        break;
+                    case "quickconvert":
+                    case "qc":
+                        if (filelocation.EndsWith(".fzfk"))
+                        {
+                            string dafile = File.ReadAllText(filelocation);
+                            dafile = dafile.Replace("<(", "⟨");
+                            dafile = dafile.Replace(")>", "⟩");
+                            dafile = dafile.Replace("!=", "≠");
+                            dafile = dafile.Replace("<=", "≤");
+                            dafile = dafile.Replace("=>", "≥");
+                            dafile = dafile.Replace("<<", "«");
+                            dafile = dafile.Replace(">>", "»");
+                        }
+                        else
+                        {
+                            Console.WriteLine("cannot quickconvert this file type!");
+                        }
+                        break;
+                    case "seembusy":
+                        if (input.Length == 2)
+                        {
+                            try
+                            {
+                                busydelay = fuckingparsefloatass(input[1]);
+                            }
+                            catch (Exception)
+                            {
+                                Console.WriteLine("couldn't change extra delay cuz you're stupid");
+                            }
+                        }
+                        Console.WriteLine("extra delay: +" + busydelay + "x");
+                        break;
+                    case "help":
+                        if (input.Length == 1)
+                        {
+                            Console.WriteLine("hi");
+                            Console.WriteLine("list of commands:\n. diye\n. location\n. runsingle ([flags])\n. compile ([flags])\n. compileinfo (compileinfo)\n. sound\n. saveoptions\n. quickswap\n. quickconvert\n. seembusy delay\n. help (command)\n. clear");
+                        }
+                        else
+                        {
+                            switch (input[1])
+                            {
+                                case "diye":
+                                    Console.WriteLine("closes the program.");
+                                    break;
+                                case "location":
+                                    Console.WriteLine("tells you the currently selected file.");
+                                    break;
+                                case "runsingle":
+                                    Console.WriteLine("runs the current fzas file.");
+                                    Console.WriteLine("([flags]):\n. runwithdebug/ruwd: runner outputs line it shall run.\n. typecheck/tch: outputs the internal type of variables in certain situations.");
+                                    break;
+                                case "compile":
+                                    Console.WriteLine("compiles the current fzfk file.");
+                                    Console.WriteLine("([flags]):\n. includemarkers/inclm: includes the internal markers in the output (but you can't run it because of that).");
+                                    Console.WriteLine(". prematureoutput/pmo initials: put in the initials of a compiler stage, and the compiler will output the file at that point instead.");
+                                    Console.WriteLine(". listcompileinfostuff: outputs all of the things added by the compile infoes before compiling.");
+                                    Console.WriteLine(". nofunctions/nofunc: skips the stage that deals with functions and local.");
+                                    Console.WriteLine(". nolinenum/noln: doesn't append the original line numbers to the outputted file, so it's less cluttered if you need to inspect it (but you can't run it because of that).");
+                                    break;
+                                case "compileinfo":
+                                    Console.WriteLine("outputs which compile infoes are selected and which are available.");
+                                    Console.WriteLine("(compileinfo): adds or removes a compile info instead.");
+                                    break;
+                                case "sound":
+                                    Console.WriteLine("toggle wether sound can be played.");
+                                    break;
+                                case "saveoptions":
+                                    Console.WriteLine("saves certain options to a file to automatically set at launch.");
+                                    Console.WriteLine("(sound, selected compile infoes, seem busy)");
+                                    break;
+                                case "quickswap":
+                                    Console.WriteLine("alias: qs");
+                                    Console.WriteLine("quickly swap between file types.");
+                                    Console.WriteLine("available: fzfk <-> fzas");
+                                    break;
+                                case "quickconvert":
+                                    Console.WriteLine("alias: qc");
+                                    Console.WriteLine("convert quicker to type representations of syntax to the actual characters.");
+                                    Console.WriteLine("available: fzfk");
+                                    break;
+                                case "seembusy":
+                                    Console.WriteLine("adds an extra delay to each compiler stage to make it seem like it's doing more.");
+                                    Console.WriteLine("(delay): the amount of added delay. multiplies the actual time it took and then waits for that long (so 1=2x, 9=10x). set to 0 to disable.");
+                                    break;
+                                case "help":
+                                    Console.WriteLine("WHAT!? HELP ME!");
+                                    break;
+                                case "clear":
+                                    Console.WriteLine("clears da consale");
+                                    break;
+                            }
+                        }
+                        break;
+                    case "clear":
+                        Console.Clear();
                         break;
                     default:
                         if (File.Exists(input[0]))
@@ -372,6 +477,10 @@ namespace fazfucku
             SoundPlayer simpleSound = new SoundPlayer(Path.Combine(Directory.GetCurrentDirectory(), "sounds", soundname));
             simpleSound.Play();
             simpleSound.Dispose();
+        }
+        public static float fuckingparsefloatass(string bitchassnumber)
+        {
+            return float.Parse(bitchassnumber.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture);
         }
     }
 }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using static fazfucku.marker;
+using System.Threading;
+using System.Diagnostics;
 
 namespace fazfucku
 {
@@ -16,59 +18,37 @@ namespace fazfucku
         public bool info_fstk_popremoveafterset;
         public bool info_arbitrarysize;
         public bool includelinenumbers = true;
+        public float busydelay = 0f;
         public string compile()
         {
             try
             {
                 lines = new List<lineinfo>();
-                Console.WriteLine("compiler: initial lexer start");
-                initiallexer();
-                if (prematureoutput == "1" || prematureoutput == "il")
-                    return outputfile();
 
-                Console.WriteLine("compiler: line detection start");
-                linedetector();
-                if (prematureoutput == "2" || prematureoutput == "ld")
+                if (docompilerstage(initiallexer, "il", "initial lexer"))
                     return outputfile();
-
-                Console.WriteLine("compiler: main conversion start");
-                mainconversion();
-                if (prematureoutput == "3" || prematureoutput == "mc")
+                if (docompilerstage(linedetector, "ld", "line detection"))
+                    return outputfile();
+                if (docompilerstage(mainconversion, "mc", "main conversion"))
                     return outputfile();
 
                 if (nofunctions)
                     Console.WriteLine("compiler: skipping function stuff lol");
                 else
                 {
-                    Console.WriteLine("compiler: function stuff start");
-                    functionstuff();
-                    if (prematureoutput == "4" || prematureoutput == "fs")
+                    if (docompilerstage(functionstuff, "fs", "function stuff"))
                         return outputfile();
                 }
 
-                Console.WriteLine("compiler: convert control flow start");
-                gototime();
-                if (prematureoutput == "5" || prematureoutput == "ccf")
+                if (docompilerstage(gototime, "ccf", "convert control flow"))
                     return outputfile();
-
-                Console.WriteLine("compiler: remove old control start");
-                removeoldcontrol();
-                if (prematureoutput == "6" || prematureoutput == "roc")
+                if (docompilerstage(removeoldcontrol, "roc", "remove old control"))
                     return outputfile();
-
-                Console.WriteLine("compiler: get unique marker locations start");
-                getuniquemarkerlocations();
-                if (prematureoutput == "7" || prematureoutput == "guml")
+                if (docompilerstage(getuniquemarkerlocations, "guml", "get unique marker locations"))
                     return outputfile();
-
-                Console.WriteLine("compiler: convert from dynamic start");
-                convertfromdynamic();
-                if (prematureoutput == "8" || prematureoutput == "cfd")
+                if (docompilerstage(convertfromdynamic, "cfd", "convert from dynamic"))
                     return outputfile();
-
-                Console.WriteLine("compiler: replace longer function names");
-                makeshort();
-                if (prematureoutput == "9" || prematureoutput == "rlf")
+                if (docompilerstage(makeshort, "rlf", "replace longer function names"))
                     return outputfile();
 
                 Console.WriteLine("compiler: output file");
@@ -79,6 +59,25 @@ namespace fazfucku
                 Console.WriteLine("compiler: " + e.ToString());
                 return string.Empty;
             }
+        }
+        private bool docompilerstage(Action stagefunction, string prematurename, string printname)
+        {
+            Stopwatch timer = new Stopwatch();
+            Console.WriteLine("compiler: " + printname);
+            timer.Start();
+            stagefunction();
+            timer.Stop();
+            double realtimetookms = timer.Elapsed.TotalMilliseconds;
+            if (busydelay > 0f)
+            {
+                timer.Start();
+                Thread.Sleep((int)Math.Round(realtimetookms * busydelay));
+                timer.Stop();
+                Console.WriteLine("compiler: took " + timer.Elapsed.TotalMilliseconds + "ms (actually " + realtimetookms + "ms)");
+            }
+            else
+                Console.WriteLine("compiler: took " + realtimetookms + "ms");
+            return prematureoutput == prematurename;
         }
         private void doerror(string err)
         {
@@ -691,6 +690,13 @@ namespace fazfucku
                         watchoutitschanging = 1;
                     else if (lines[i].pieces[0] == "fstk_pop")
                         watchoutitschanging = 2;
+                    else if (lines[i].pieces[0] == "internal rename funcstack")
+                    {
+                        for (int gay = 1; gay < lines[i].pieces.Count; gay++)
+                        {
+                            variablestack[gay - 1] = lines[i].pieces[gay];
+                        }
+                    }
                     for (int j = 1; j < lines[i].pieces.Count; j++)
                     {
                         if (watchoutitschanging == 2 && !info_fstk_popremoveafterset)

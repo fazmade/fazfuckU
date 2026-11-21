@@ -12,8 +12,11 @@ release
 
 func pissoff[outie](fuq u)
 {
-	if (repeats = 0)
+	if ⟨repeats = 0⟩
 		return
 	(outie - fuq u)
+	(repeats - 1)
+	pissoff[outie](fuq u)
+	Debug_variables
 	return
 }

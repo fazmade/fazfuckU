@@ -1,2 +1,3 @@
 sound on
 compileinfoes base base_lists console
+busydelay 0
