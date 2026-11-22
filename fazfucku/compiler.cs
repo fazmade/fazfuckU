@@ -29,17 +29,18 @@ namespace fazfucku
                     return outputfile();
                 if (docompilerstage(linedetector, "ld", "line detection"))
                     return outputfile();
+                if (!nofunctions)
+                {
+                    if (docompilerstage(customfunctioninserter, "cfi", "custom function inserter"))
+                        return outputfile();
+                }
                 if (docompilerstage(mainconversion, "mc", "main conversion"))
                     return outputfile();
-
-                if (nofunctions)
-                    Console.WriteLine("compiler: skipping function stuff lol");
-                else
+                if (!nofunctions)
                 {
                     if (docompilerstage(functionstuff, "fs", "function stuff"))
                         return outputfile();
                 }
-
                 if (docompilerstage(gototime, "ccf", "convert control flow"))
                     return outputfile();
                 if (docompilerstage(removeoldcontrol, "roc", "remove old control"))
@@ -327,11 +328,73 @@ namespace fazfucku
             lines[line].markers.Add(new marker(markertype.unique, uniquemarkers.Count));
             uniquemarkers.Add(nae, -1);
         }
+        Predicate<string> commaer = piec => piec == ","; //checks if it's a comma i think
+        //custom function inserter
+        #region custom function inserter
+        void customfunctioninserter()
+        {
+            for (int i = 0; i < lines.Count; i++)
+            {
+                bool iscustomfunc = false;
+                string functionname = null;
+                List<string> parameters = new List<string>();
+                List<string> outvariables = new List<string>();
+                List<string> setvar = new List<string>();
+                switch (lines[i].type)
+                {
+                    case linetype.function:
+                        if (customfunctions.ContainsKey(lines[i].pieces[0]))
+                        {
+                            iscustomfunc = true;
+                            functionname = lines[i].pieces[0];
+                            lines[i].pieces.RemoveAll(commaer);
+                            parameters = getpartsbetween(lines[i].pieces, "(", ")");
+                            outvariables = getpartsbetween(lines[i].pieces, "[", "]");
+                        }
+                        break;
+                    case linetype.functionset:
+                        {
+                            List<string> piecesclone = lines[i].pieces;
+                            piecesclone.RemoveAll(commaer);
+                            int variablecount = piecesclone.IndexOf("=");
+                            setvar = piecesclone.GetRange(0, variablecount);
+                            piecesclone.RemoveRange(0, variablecount + 1);
+                            if (customfunctions.ContainsKey(piecesclone[0]))
+                            {
+                                iscustomfunc = true;
+                                functionname = piecesclone[0];
+                                //piecesclone.RemoveAll(commaer);
+                                parameters = getpartsbetween(piecesclone, "(", ")");
+                                outvariables = getpartsbetween(piecesclone, "[", "]");
+                            }
+                        }
+                        break;
+                    case linetype.standalone:
+                        if (customfunctions.ContainsKey(lines[i].pieces[0]))
+                        {
+                            iscustomfunc = true;
+                            functionname = lines[i].pieces[0];
+                        }
+                        break;
+                }
+                if (iscustomfunc)
+                {
+                    lines[i].pieces = new List<string> { functionname, setvar.Count.ToString(), outvariables.Count.ToString(), parameters.Count.ToString() };
+                    if (setvar.Count != 0)
+                        lines[i].pieces.AddRange(setvar);
+                    if (outvariables.Count != 0)
+                        lines[i].pieces.AddRange(outvariables);
+                    if (parameters.Count != 0)
+                        lines[i].pieces.AddRange(parameters);
+                    lines[i].type = linetype.customfunction;
+                }
+            }
+        }
+        #endregion
         //main fazass conversion
         #region main fazass conversion
         void mainconversion()
         {
-            Predicate<string> commaer = piec => piec == ","; //checks if it's a comma i think
             for (int i = 0; i < lines.Count; i++)
             {
                 switch (lines[i].type)
@@ -506,13 +569,38 @@ namespace fazfucku
                         removeline(i);
                         i--;
                         break;
-                    case linetype.standalone:
-                        if (customfunctions.ContainsKey(lines[i].pieces[0]))
+                    case linetype.customfunction:
+                        List<string> linepieces = lines[i].pieces;
+                        int originalid = lines[i].originallineid;
+
+                        int setcount = int.Parse(linepieces[1]);
+                        List<string> setvars = linepieces.GetRange(4, setcount);
+                        int outcount = int.Parse(linepieces[2]);
+                        List<string> outvars = linepieces.GetRange(4 + setcount, outcount);
+                        int parcount = int.Parse(linepieces[3]);
+                        List<string> parameters = linepieces.GetRange(4 + setcount + outcount, parcount);
+
+                        List<string> newline = new List<string> { "fstk_add" };
+                        for (int j = 0; j < setcount; j++)
+                            newline.Add("NUT");
+                        newline.AddRange(outvars);
+                        newline.Add("$@+2");
+                        newline.AddRange(parameters);
+                        lines.Insert(i+1, new lineinfo(originalid, linetype.fazfuck, newline));
+                        removeline(i);
+                        i++;
+
+                        lines.Insert(i, new lineinfo(originalid, linetype.fazfuck, new List<string> { "goto", "@u" + linepieces[0] }));
+                        i++;
+
+                        if (setcount != 0 || outcount != 0)
                         {
-                            //adds goto
-                            lines.Insert(i + 1, new lineinfo(lines[i].originallineid, linetype.fazfuck, new List<string> { "goto", "@u" + lines[i].pieces[0] }));
-                            //convert to funcstack add line
-                            lines[i].pieces = new List<string> { "fstk_add", "$@+2" };
+                            newline = new List<string>();
+                            newline.AddRange(setvars);
+                            newline.AddRange(outvars);
+                            newline.Add("fstk_pop");
+                            newline.Reverse();
+                            lines.Insert(i, new lineinfo(originalid, linetype.fazfuck, newline));
                             i++;
                         }
                         break;
@@ -962,7 +1050,7 @@ namespace fazfucku
             return thebuilder.ToString().TrimEnd('\n').TrimEnd('\r');
         }
     }
-    enum linetype { math, mathdirect, boel, booldirect, function, functionset, standalone, boolfunction, set, definationfunc, broken, theresNOTHING, boolfunctionnargumentset, fazfuck, boolfunctionwarg, blockfunc, markerlabel }
+    enum linetype { math, mathdirect, boel, booldirect, function, functionset, standalone, boolfunction, set, definationfunc, broken, theresNOTHING, boolfunctionnargumentset, fazfuck, boolfunctionwarg, blockfunc, markerlabel, customfunction }
     class lineinfo
     {
         public List<string> pieces = new List<string>();
