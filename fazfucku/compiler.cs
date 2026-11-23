@@ -395,7 +395,7 @@ namespace fazfucku
         #region main fazass conversion
         void mainconversion()
         {
-            for (int i = 0; i < lines.Count; i++)
+            /*for (int i = 0; i < lines.Count; i++)
             {
                 switch (lines[i].type)
                 {
@@ -550,7 +550,7 @@ namespace fazfucku
                                 {
                                     lines.Insert(i, new lineinfo(origid, linetype.function, conditioncheck));
                                     lines.Insert(i + 3, new lineinfo(origid, linetype.function, new List<string> { "next_unless", "-1" })); //the next flag would be on the otherwise connection; add offset of minus one since we're not in that indent yet
-                                }*/
+                                }*//*
                                 break;
                             case "otherwise":
                                 doerror("otherwise not supported yet ):");
@@ -605,7 +605,7 @@ namespace fazfucku
                         }
                         break;
                 }
-            }
+            }*/
         }
         public List<char> mathoperators = new List<char>();
         void parsemath(string toparse, out string num1, out string oper, out string num2)

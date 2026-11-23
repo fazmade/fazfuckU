@@ -1,6 +1,7 @@
 function shorthands
 print pr
 release rel
+catch cat
 goto go
 conddontgoto cdg
 condsplitgoto csg
@@ -23,7 +24,7 @@ string_substring str_sub
 string_split str_spl
 string_join str_joe
 string_length str_len
-hook_define h_d
+hook_add hoka
 
 math functions
 round m rn

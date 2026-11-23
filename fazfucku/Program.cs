@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-//using System.Linq;
+using System.Linq;
 using System.Media;
+using System.Reflection.Emit;
 using System.Text;
 
 namespace fazfucku
@@ -46,7 +47,7 @@ namespace fazfucku
                     case "location":
                         Console.WriteLine(filelocation);
                         break;
-                    case "runsingle":
+                    case "runonce":
                         if (filelocation == string.Empty)
                             Console.WriteLine("no file location set!");
                         else if (!filelocation.EndsWith(".fzas"))
@@ -55,28 +56,8 @@ namespace fazfucku
                             Console.WriteLine(filelocation + " doesn't exist!");
                         else
                         {
-                            fazassrunner myassisblicky = new fazassrunner();
-                            myassisblicky.loadprogram(File.ReadAllLines(filelocation));
-                            if (input.Length > 1)
-                            {
-                                for (int i = 1; i < input.Length; i++)
-                                {
-                                    switch (input[i])
-                                    {
-                                        case "runwithdebug":
-                                        case "ruwd":
-                                            myassisblicky.debug_runline = true;
-                                            break;
-                                        case "typecheck":
-                                        case "tch":
-                                            myassisblicky.debug_typecheck = true;
-                                            break;
-                                        default:
-                                            Console.WriteLine(input[i] + " is not a valid run setting!");
-                                            break;
-                                    }
-                                }
-                            }
+                            fazassrunner myassisblicky = initfazassrunner(File.ReadAllLines(filelocation),
+                                input.ToList().GetRange(1, input.Length-1).ToArray()); //fuck you
                             try
                             {
                                 myassisblicky.run();
@@ -86,6 +67,87 @@ namespace fazfucku
                                 Console.WriteLine(e.ToString());
                                 funnywindowssound(soundeffect.bigerrorbro);
                             }
+                            break;
+                        }
+                        funnywindowssound(soundeffect.error);
+                        break;
+                    case "runcont":
+                        if (filelocation == string.Empty)
+                            Console.WriteLine("no file location set!");
+                        else if (!filelocation.EndsWith(".fzas"))
+                            Console.WriteLine(filelocation + " isn't a fazass file!");
+                        else if (!File.Exists(filelocation))
+                            Console.WriteLine(filelocation + " doesn't exist!");
+                        else
+                        {
+                            fazassrunner myassisblicky = initfazassrunner(File.ReadAllLines(filelocation),
+                                input.ToList().GetRange(1, input.Length - 1).ToArray()); //fuck you
+                            try
+                            {
+                                myassisblicky.run();
+                                bool funnynameforavariablethatholdsiftherunnershouldcontinuetoloop = true;
+                                while (funnynameforavariablethatholdsiftherunnershouldcontinuetoloop)
+                                {
+                                    ConsoleKey conkey/*!*/ = Console.ReadKey(true).Key;
+                                    myassisblicky.caught = false;
+                                    switch (conkey)
+                                    {
+                                        case ConsoleKey.Spacebar:
+                                            if (myassisblicky.hooks.ContainsKey("key_space"))
+                                            {
+                                                myassisblicky.counter = myassisblicky.hooks["key_space"];
+                                                myassisblicky.run();
+                                            }
+                                            break;
+                                        case ConsoleKey.Escape:
+                                            funnynameforavariablethatholdsiftherunnershouldcontinuetoloop = false;
+                                            break;
+                                        case ConsoleKey.F1:
+                                            if (myassisblicky.hooks.ContainsKey("key_red"))
+                                            {
+                                                myassisblicky.counter = myassisblicky.hooks["key_red"];
+                                                myassisblicky.run();
+                                            }
+                                            if (!myassisblicky.caught)
+                                                Console.BackgroundColor = ConsoleColor.Red;
+                                            break;
+                                        case ConsoleKey.F2:
+                                            if (myassisblicky.hooks.ContainsKey("key_green"))
+                                            {
+                                                myassisblicky.counter = myassisblicky.hooks["key_green"];
+                                                myassisblicky.run();
+                                            }
+                                            if (!myassisblicky.caught)
+                                                Console.BackgroundColor = ConsoleColor.Green;
+                                            break;
+                                        case ConsoleKey.F3:
+                                            if (myassisblicky.hooks.ContainsKey("key_blue"))
+                                            {
+                                                myassisblicky.counter = myassisblicky.hooks["key_blue"];
+                                                myassisblicky.run();
+                                            }
+                                            if (!myassisblicky.caught)
+                                                Console.BackgroundColor = ConsoleColor.Blue;
+                                            break;
+                                        case ConsoleKey.F4:
+                                            if (myassisblicky.hooks.ContainsKey("key_reset"))
+                                            {
+                                                myassisblicky.counter = myassisblicky.hooks["key_blue"];
+                                                myassisblicky.run();
+                                            }
+                                            if (!myassisblicky.caught)
+                                                Console.ResetColor();
+                                            break;
+                                    }
+                                    Console.WriteLine(conkey.ToString());
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e.ToString());
+                                funnywindowssound(soundeffect.bigerrorbro);
+                            }
+                            Console.ResetColor();
                             break;
                         }
                         funnywindowssound(soundeffect.error);
@@ -388,7 +450,7 @@ namespace fazfucku
                         if (input.Length == 1)
                         {
                             Console.WriteLine("hi");
-                            Console.WriteLine("list of commands:\n. diye\n. location\n. runsingle ([flags])\n. compile ([flags])\n. compileinfo (compileinfo)\n. sound\n. saveoptions\n. quickswap\n. quickconvert\n. seembusy delay\n. help (command)\n. clear");
+                            Console.WriteLine("list of commands:\n. diye\n. location\n. runonce ([flags])\n. runcont ([flags])\n. compile ([flags])\n. compileinfo (compileinfo)\n. sound\n. saveoptions\n. quickswap\n. quickconvert\n. seembusy delay\n. help (command)\n. clear");
                         }
                         else
                         {
@@ -400,8 +462,12 @@ namespace fazfucku
                                 case "location":
                                     Console.WriteLine("tells you the currently selected file.");
                                     break;
-                                case "runsingle":
-                                    Console.WriteLine("runs the current fzas file.");
+                                case "runonce":
+                                    Console.WriteLine("runs the current fzas file, stopping after the first release.");
+                                    Console.WriteLine("([flags]):\n. runwithdebug/ruwd: runner outputs line it shall run.\n. typecheck/tch: outputs the internal type of variables in certain situations.");
+                                    break;
+                                case "runcont":
+                                    Console.WriteLine("runs the current fzas file, continuing after the first release. press esc to stop.");
                                     Console.WriteLine("([flags]):\n. runwithdebug/ruwd: runner outputs line it shall run.\n. typecheck/tch: outputs the internal type of variables in certain situations.");
                                     break;
                                 case "compile":
@@ -500,6 +566,32 @@ namespace fazfucku
         public static float fuckingparsefloatass(string bitchassnumber)
         {
             return float.Parse(bitchassnumber.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture);
+        }
+        static fazassrunner initfazassrunner(string[] program, string[] flags)
+        {
+            fazassrunner myassisblicky = new fazassrunner();
+            myassisblicky.loadprogram(program);
+            if (flags.Length > 0)
+            {
+                for (int i = 0; i < flags.Length; i++)
+                {
+                    switch (flags[i])
+                    {
+                        case "runwithdebug":
+                        case "ruwd":
+                            myassisblicky.debug_runline = true;
+                            break;
+                        case "typecheck":
+                        case "tch":
+                            myassisblicky.debug_typecheck = true;
+                            break;
+                        default:
+                            Console.WriteLine(flags[i] + " is not a valid run setting!");
+                            break;
+                    }
+                }
+            }
+            return myassisblicky;
         }
     }
 }

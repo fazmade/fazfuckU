@@ -1,0 +1,35 @@
+may i change color = true
+print("i have done nothing but teleport bread for 3 days!")
+release
+
+hook key_space
+{
+	print("rodger that!")
+	may i change color = !may i change color
+	if ⟨may i change color⟩
+	{
+		print("you have the color")
+	}
+	else
+	{
+		print("no more color")
+	}
+	release
+}
+
+hook key_red
+hook key_green
+hook key_blue
+hook key_reset
+{
+	if ⟨may i change color⟩
+	{
+		print("yes")
+		release
+	}
+	else
+	{
+		print("no")
+		catch
+	}
+}

@@ -10,14 +10,15 @@ namespace fazfucku
         private string[][] lines;
         private int[] linenum;
         private Dictionary<string, object> globaldict = new Dictionary<string, object>();
-        private int counter = 0;
-        //static Dictionary<string, int> pointers = new Dictionary<string, int>();
+        public int counter = 0;
+        public Dictionary<string, int> hooks = new Dictionary<string, int>();
         //static bool isinhook = false;
         private List<object> funcstack = new List<object>();
         private bool blankvar;
         public bool debug_runline = false;
         public bool debug_typecheck = false;
         private float mathhalfrot = (float)Math.PI;
+        public bool caught = false;
         public void loadprogram(string[] prog)
         {
             List<string[]> processinglines = new List<string[]>();
@@ -57,6 +58,10 @@ namespace fazfucku
                         Console.WriteLine(getvar(line[1]));
                         break;
                     case "rel":
+                        caught = false;
+                        return -1;
+                    case "cat":
+                        caught = true;
                         return -1;
                     case "go":
                         return int.Parse(line[1]);
@@ -476,6 +481,10 @@ namespace fazfucku
                     case "l_h": //list_has
                         setvar(line[1], ((List<object>)getvar(line[2])).Contains(getvar(line[3])));
                         break;
+                    case "hoka": //hook_add
+                        hooks.Add(line[1], int.Parse(line[2]));
+                        setvar(line[1], ((List<object>)getvar(line[2])).Contains(getvar(line[3])));
+                        break;
 
                     //COMSOEL?!
                     case "cons_gtline":
@@ -484,7 +493,10 @@ namespace fazfucku
                         break;
                     case "cons_cheesc":
                         if (Console.KeyAvailable && Console.ReadKey().Key == ConsoleKey.Escape)
+                        {
+                            caught = true;
                             return -1;
+                        }
                         break;
                     case "cons_gtkey":
                         setvar(line[1], (int)Console.ReadKey(true).Key);
@@ -509,6 +521,9 @@ namespace fazfucku
                         Console.WriteLine("blankvar: " + blankvar);
                         Console.WriteLine("mathhalfrot: " + mathhalfrot);
                         Console.ResetColor();
+                        break;
+                    case "cons_clr":
+                        Console.Clear();
                         break;
                 }
                 return counter + 1;
