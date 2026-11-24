@@ -395,7 +395,7 @@ namespace fazfucku
         #region main fazass conversion
         void mainconversion()
         {
-            /*for (int i = 0; i < lines.Count; i++)
+            for (int i = 0; i < lines.Count; i++)
             {
                 switch (lines[i].type)
                 {
@@ -404,39 +404,11 @@ namespace fazfucku
                         i--;
                         break;
                     case linetype.function:
-                        if (customfunctions.ContainsKey(lines[i].pieces[0]))
-                        {
-                            //adds goto
-                            lines.Insert(i+1, new lineinfo(lines[i].originallineid, linetype.fazfuck, new List<string> { "goto", "@u" + lines[i].pieces[0] }));
-                            //the jank of varialing
-                            lines[i].pieces.RemoveAll(commaer);
-                            List<string> parameters = getpartsbetween(lines[i].pieces, "(", ")");
-                            List<string> outvariables = getpartsbetween(lines[i].pieces, "[", "]");
-                            if (outvariables.Count != 0)
-                            {
-                                //add pop line
-                                List<string> popperline = new List<string>();
-                                popperline.AddRange(outvariables);
-                                popperline.Add("fstk_pop"); //is the first part when reversed
-                                popperline.Reverse();
-                                lines.Insert(i+2, new lineinfo(lines[i].originallineid, linetype.fazfuck, popperline)); //add to afterwards
-                            }
-                            //convert to funcstack add line
-                            lines[i].pieces = new List<string> { "fstk_add" };
-                            lines[i].pieces.AddRange(outvariables);
-                            lines[i].pieces.Add("$@+2");
-                            lines[i].pieces.AddRange(parameters);
-                            i++;
-                        }
-                        else
-                        {
-                            lines[i].pieces.RemoveAll(commaer);
-                            lines[i].pieces.Remove("(");
-                            lines[i].pieces.Remove(")");
-                            lines[i].pieces.Remove("[");
-                            lines[i].pieces.Remove("]");
-                        }
-                        //lines[i].type = linetype.fazfuck;
+                        lines[i].pieces.RemoveAll(commaer);
+                        lines[i].pieces.Remove("(");
+                        lines[i].pieces.Remove(")");
+                        lines[i].pieces.Remove("[");
+                        lines[i].pieces.Remove("]");
                         break;
                     case linetype.functionset:
                         {
@@ -444,41 +416,11 @@ namespace fazfucku
                             int variablecount = lines[i].pieces.IndexOf("=");
                             List<string> setvar = lines[i].pieces.GetRange(0, variablecount);
                             lines[i].pieces.RemoveRange(0, variablecount + 1);
-                            if (customfunctions.ContainsKey(lines[i].pieces[0]))
-                            {
-                                //adds goto
-                                lines.Insert(i + 1, new lineinfo(lines[i].originallineid, linetype.fazfuck, new List<string> { "goto", "@u" + lines[i].pieces[0] }));
-                                //the jank of varialing
-                                lines[i].pieces.RemoveAll(commaer);
-                                List<string> parameters = getpartsbetween(lines[i].pieces, "(", ")");
-                                List<string> outvariables = getpartsbetween(lines[i].pieces, "[", "]");
-                                //add pop line (not in out because a set always should have an out)
-                                List<string> popperline = new List<string>();
-                                popperline.AddRange(setvar);
-                                popperline.AddRange(outvariables);
-                                popperline.Add("fstk_pop");
-                                popperline.Reverse();
-                                lines.Insert(i + 2, new lineinfo(lines[i].originallineid, linetype.fazfuck, popperline));
-                                //convert to funcstack add line
-                                lines[i].pieces = new List<string> { "fstk_add" };
-                                for (int j = 0; j < setvar.Count; j++)
-                                {
-                                    lines[i].pieces.Add("NUT");
-                                }
-                                lines[i].pieces.AddRange(outvariables);
-                                lines[i].pieces.Add("$@+2");
-                                lines[i].pieces.AddRange(parameters);
-                                i++;
-                            }
-                            else
-                            {
-                                lines[i].pieces.Remove("(");
-                                lines[i].pieces.Remove(")");
-                                lines[i].pieces.Remove("[");
-                                lines[i].pieces.Remove("]");
-                                lines[i].pieces.InsertRange(1, setvar); //add back setvar
-                            }
-                            //lines[i].type = linetype.fazfuck;
+                            lines[i].pieces.Remove("(");
+                            lines[i].pieces.Remove(")");
+                            lines[i].pieces.Remove("[");
+                            lines[i].pieces.Remove("]");
+                            lines[i].pieces.InsertRange(1, setvar); //add back setvar
                         }
                         break;
                     case linetype.math:
@@ -550,7 +492,7 @@ namespace fazfucku
                                 {
                                     lines.Insert(i, new lineinfo(origid, linetype.function, conditioncheck));
                                     lines.Insert(i + 3, new lineinfo(origid, linetype.function, new List<string> { "next_unless", "-1" })); //the next flag would be on the otherwise connection; add offset of minus one since we're not in that indent yet
-                                }*//*
+                                }*/
                                 break;
                             case "otherwise":
                                 doerror("otherwise not supported yet ):");
@@ -605,7 +547,7 @@ namespace fazfucku
                         }
                         break;
                 }
-            }*/
+            }
         }
         public List<char> mathoperators = new List<char>();
         void parsemath(string toparse, out string num1, out string oper, out string num2)
