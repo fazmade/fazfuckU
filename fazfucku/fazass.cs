@@ -378,14 +378,17 @@ namespace fazfucku
                         }
                         break;
                     case "fd": //funcstack_discard
-                        int discardamount = int.Parse(line[1]);
-                        funcstack.RemoveRange(funcstack.Count - discardamount, discardamount);
-                        funcstack.TrimExcess();
+                        {
+                            int discardamount = int.Parse(line[1]);
+                            funcstack.RemoveRange(funcstack.Count - discardamount, discardamount);
+                            funcstack.TrimExcess();
+                        }
                         break;
-                    case "fg": //funcstack_popgoto
+                    case "fg": //funcstack_popdiscardgoto
                         {
                             int jumbojosh = (int)funcstack[funcstack.Count - 1];
-                            funcstack.RemoveAt(funcstack.Count - 1);
+                            int discardamount = int.Parse(line[1])+1;
+                            funcstack.RemoveRange(funcstack.Count - discardamount, discardamount);
                             funcstack.TrimExcess();
                             return jumbojosh;
                         }
